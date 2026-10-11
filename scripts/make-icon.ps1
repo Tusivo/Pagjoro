@@ -1,4 +1,4 @@
-# Draws the Pagjoro icon (a page with a folded corner on a teal tile; no letters) and writes src\Pagjoro.App\Assets\Pagjoro.ico.
+# Draws the Pagjoro icon (a page with a folded corner on a deep purple tile; no letters) and writes src\Pagjoro.App\Assets\Pagjoro.ico.
 # Original artwork: made entirely from shapes drawn here. Run: powershell -ExecutionPolicy Bypass -File scripts\make-icon.ps1
 Add-Type -AssemblyName System.Drawing
 $out = Join-Path $PSScriptRoot '..\src\Pagjoro.App\Assets\Pagjoro.ico'
@@ -14,7 +14,7 @@ function Draw([int]$size) {
     $tile = New-Object System.Drawing.Drawing2D.GraphicsPath
     $tile.AddArc(0, 0, 2 * $r, 2 * $r, 180, 90); $tile.AddArc($s - 2 * $r, 0, 2 * $r, 2 * $r, 270, 90)
     $tile.AddArc($s - 2 * $r, $s - 2 * $r, 2 * $r, 2 * $r, 0, 90); $tile.AddArc(0, $s - 2 * $r, 2 * $r, 2 * $r, 90, 90); $tile.CloseFigure()
-    $grad = New-Object System.Drawing.Drawing2D.LinearGradientBrush ([System.Drawing.PointF]::new(0, 0)), ([System.Drawing.PointF]::new($s, $s)), ([System.Drawing.Color]::FromArgb(255, 15, 118, 110)), ([System.Drawing.Color]::FromArgb(255, 45, 212, 191))
+    $grad = New-Object System.Drawing.Drawing2D.LinearGradientBrush ([System.Drawing.PointF]::new(0, 0)), ([System.Drawing.PointF]::new($s, $s)), ([System.Drawing.Color]::FromArgb(255, 59, 15, 118)), ([System.Drawing.Color]::FromArgb(255, 124, 58, 237))
     $g.FillPath($grad, $tile)
     # page with a folded top-right corner
     $x0 = $s * 0.27; $x1 = $s * 0.73; $y0 = $s * 0.17; $y1 = $s * 0.83; $fold = $s * 0.17
@@ -23,10 +23,10 @@ function Draw([int]$size) {
         [System.Drawing.PointF]::new($x0, $y0), [System.Drawing.PointF]::new($x1 - $fold, $y0), [System.Drawing.PointF]::new($x1, $y0 + $fold),
         [System.Drawing.PointF]::new($x1, $y1), [System.Drawing.PointF]::new($x0, $y1)))
     $g.FillPath([System.Drawing.Brushes]::White, $page)
-    $foldBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 204, 235, 231))
+    $foldBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 221, 214, 254))
     $g.FillPolygon($foldBrush, @([System.Drawing.PointF]::new($x1 - $fold, $y0), [System.Drawing.PointF]::new($x1 - $fold, $y0 + $fold), [System.Drawing.PointF]::new($x1, $y0 + $fold)))
     # lines of text
-    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 15, 118, 110)), ([single]($s * 0.045))
+    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 76, 29, 149)), ([single]($s * 0.045))
     $pen.StartCap = 'Round'; $pen.EndCap = 'Round'
     foreach ($row in 0.44, 0.56, 0.68) { $g.DrawLine($pen, $s * 0.36, $s * $row, $s * 0.64, $s * $row) }
     $amber = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 245, 158, 11)), ([single]($s * 0.045))
