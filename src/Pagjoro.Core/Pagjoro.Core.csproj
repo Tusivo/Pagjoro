@@ -4,7 +4,15 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Pagjoro.Core</RootNamespace>
     <AssemblyName>Pagjoro.Core</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- the PDF engine: PDFium (BSD-3-Clause), wrapped by PDFiumCore (Apache-2.0) -->
+    <PackageReference Include="PDFiumCore" Version="4688.0.0" />
+    <!-- rewriting file structure: passwords, document information, compression, signatures (MIT) -->
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- the public key updates must be signed with (made by: node scripts/release-sign.js keygen) -->

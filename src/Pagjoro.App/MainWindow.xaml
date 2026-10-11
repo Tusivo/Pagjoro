@@ -1,55 +1,259 @@
 <Window x:Class="Pagjoro.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Pagjoro" Width="1100" Height="760" MinWidth="640" MinHeight="460"
-        WindowStartupLocation="CenterScreen">
-    <Grid Margin="32">
+        Title="Pagjoro" Width="1360" Height="860" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterScreen" AllowDrop="True" Drop="OnDrop" Closing="OnClosing">
+    <Window.Resources>
+        <Style x:Key="Cmd" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="MinWidth" Value="64" />
+        </Style>
+        <Style x:Key="ToolToggle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="MinWidth" Value="64" />
+        </Style>
+        <Style x:Key="Group" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Opacity" Value="0.65" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Open}" />
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Save}" />
+        <KeyBinding Key="S" Modifiers="Ctrl+Shift" Command="{x:Static ApplicationCommands.SaveAs}" />
+        <KeyBinding Key="P" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Print}" />
+        <KeyBinding Key="F" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Find}" />
+        <KeyBinding Key="Z" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Undo}" />
+        <KeyBinding Key="Y" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Redo}" />
+        <KeyBinding Key="C" Modifiers="Ctrl" Command="{x:Static ApplicationCommands.Copy}" />
+    </Window.InputBindings>
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static ApplicationCommands.Open}" Executed="OnOpen" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Save}" Executed="OnSave" CanExecute="HasDocument" />
+        <CommandBinding Command="{x:Static ApplicationCommands.SaveAs}" Executed="OnSaveAs" CanExecute="HasDocument" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Print}" Executed="OnPrint" CanExecute="HasDocument" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Find}" Executed="OnFocusSearch" CanExecute="HasDocument" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Undo}" Executed="OnUndo" CanExecute="HasDocument" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Redo}" Executed="OnRedo" CanExecute="HasDocument" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Copy}" Executed="OnCopy" CanExecute="HasDocument" />
+    </Window.CommandBindings>
+
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Image Source="Assets/Pagjoro.png" Width="56" Height="56" Margin="0,0,16,0" />
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock x:Name="NameText" FontSize="32" FontWeight="SemiBold" />
-                <TextBlock x:Name="VersionText" Opacity="0.75" />
-            </StackPanel>
-        </StackPanel>
+        <!-- command tabs -->
+        <TabControl x:Name="Ribbon" Grid.Row="0" Padding="10,8,10,2">
+            <TabItem Header="File">
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource Cmd}" Content="Open..." Click="OnOpen" ToolTip="Open a PDF (Ctrl+O)" />
+                    <Button Style="{StaticResource Cmd}" Content="Save" Click="OnSave" ToolTip="Save (Ctrl+S)" />
+                    <Button Style="{StaticResource Cmd}" Content="Save As..." Click="OnSaveAs" ToolTip="Save a copy (Ctrl+Shift+S)" />
+                    <Button Style="{StaticResource Cmd}" Content="Print..." Click="OnPrint" ToolTip="Print (Ctrl+P)" />
+                    <Button Style="{StaticResource Cmd}" Content="Undo" Click="OnUndo" ToolTip="Undo the last change (Ctrl+Z)" />
+                    <Button Style="{StaticResource Cmd}" Content="Redo" Click="OnRedo" ToolTip="Redo (Ctrl+Y)" />
+                    <Button Style="{StaticResource Cmd}" Content="Properties..." Click="OnProperties" />
+                    <Button Style="{StaticResource Cmd}" Content="Close File" Click="OnCloseFile" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="View">
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource Cmd}" Content="Zoom In" Click="OnZoomIn" />
+                    <Button Style="{StaticResource Cmd}" Content="Zoom Out" Click="OnZoomOut" />
+                    <Button Style="{StaticResource Cmd}" Content="Fit Width" Click="OnFitWidth" />
+                    <Button Style="{StaticResource Cmd}" Content="Fit Page" Click="OnFitPage" />
+                    <Button Style="{StaticResource Cmd}" Content="Actual Size" Click="OnActualSize" />
+                    <Button Style="{StaticResource Cmd}" Content="Previous Page" Click="OnPrevPage" />
+                    <Button Style="{StaticResource Cmd}" Content="Next Page" Click="OnNextPage" />
+                    <Button Style="{StaticResource Cmd}" Content="Go to Page..." Click="OnGoToPage" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="Comment">
+                <WrapPanel Margin="0,8,0,0">
+                    <ToggleButton x:Name="ToolSelect" Style="{StaticResource ToolToggle}" Content="Select Text" Click="OnTool" Tag="Select" IsChecked="True" />
+                    <ToggleButton x:Name="ToolHighlight" Style="{StaticResource ToolToggle}" Content="Highlight" Click="OnTool" Tag="Highlight" ToolTip="Drag over text to highlight it" />
+                    <ToggleButton x:Name="ToolUnderline" Style="{StaticResource ToolToggle}" Content="Underline" Click="OnTool" Tag="Underline" />
+                    <ToggleButton x:Name="ToolStrike" Style="{StaticResource ToolToggle}" Content="Strike Through" Click="OnTool" Tag="Strikeout" />
+                    <ToggleButton x:Name="ToolNote" Style="{StaticResource ToolToggle}" Content="Note" Click="OnTool" Tag="Note" ToolTip="Click where the note should go" />
+                    <ToggleButton x:Name="ToolDraw" Style="{StaticResource ToolToggle}" Content="Draw" Click="OnTool" Tag="Draw" />
+                    <ToggleButton x:Name="ToolRect" Style="{StaticResource ToolToggle}" Content="Rectangle" Click="OnTool" Tag="Rectangle" />
+                    <ToggleButton x:Name="ToolOval" Style="{StaticResource ToolToggle}" Content="Oval" Click="OnTool" Tag="Ellipse" />
+                    <TextBlock Text="Colour" VerticalAlignment="Center" Margin="12,0,6,6" />
+                    <ComboBox x:Name="ColorBox" Width="110" Margin="0,0,6,6" SelectionChanged="OnColor" SelectedIndex="0">
+                        <ComboBoxItem Content="Yellow" Tag="Yellow" />
+                        <ComboBoxItem Content="Green" Tag="Green" />
+                        <ComboBoxItem Content="Blue" Tag="Blue" />
+                        <ComboBoxItem Content="Red" Tag="Red" />
+                    </ComboBox>
+                    <Button Style="{StaticResource Cmd}" Content="Mark Selection" Click="OnMarkSelection" ToolTip="Highlight the selected text" />
+                    <Button Style="{StaticResource Cmd}" Content="Marks List" Click="OnShowMarks" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="Pages">
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource Cmd}" Content="Rotate Left" Click="OnRotateLeft" />
+                    <Button Style="{StaticResource Cmd}" Content="Rotate Right" Click="OnRotateRight" />
+                    <Button Style="{StaticResource Cmd}" Content="Delete Pages" Click="OnDeletePages" />
+                    <Button Style="{StaticResource Cmd}" Content="Move Up" Click="OnMoveUp" />
+                    <Button Style="{StaticResource Cmd}" Content="Move Down" Click="OnMoveDown" />
+                    <Button Style="{StaticResource Cmd}" Content="Extract Pages..." Click="OnExtractPages" />
+                    <Button Style="{StaticResource Cmd}" Content="Insert Blank Page" Click="OnInsertBlank" />
+                    <Button Style="{StaticResource Cmd}" Content="Insert From File..." Click="OnInsertFromFile" />
+                    <Button Style="{StaticResource Cmd}" Content="Merge Files..." Click="OnMerge" />
+                    <Button Style="{StaticResource Cmd}" Content="Split..." Click="OnSplit" />
+                    <Button Style="{StaticResource Cmd}" Content="Crop Pages..." Click="OnCrop" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="Edit">
+                <WrapPanel Margin="0,8,0,0">
+                    <ToggleButton x:Name="ToolText" Style="{StaticResource ToolToggle}" Content="Add Text" Click="OnTool" Tag="Text" ToolTip="Click on the page where the text should go" />
+                    <ToggleButton x:Name="ToolImage" Style="{StaticResource ToolToggle}" Content="Add Picture" Click="OnTool" Tag="Image" ToolTip="Drag a box, then choose the picture" />
+                    <Button Style="{StaticResource Cmd}" Content="Watermark..." Click="OnWatermark" />
+                    <Button Style="{StaticResource Cmd}" Content="Header and Footer..." Click="OnHeaderFooter" />
+                    <Button Style="{StaticResource Cmd}" Content="Page Numbers..." Click="OnPageNumbers" />
+                    <Button Style="{StaticResource Cmd}" Content="Bates Numbers..." Click="OnBates" />
+                    <Button Style="{StaticResource Cmd}" Content="Flatten Marks" Click="OnFlatten" ToolTip="Make comments and form fields part of the page" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="Protect">
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource Cmd}" Content="Set Password..." Click="OnSetPassword" />
+                    <Button Style="{StaticResource Cmd}" Content="Remove Password" Click="OnRemovePassword" />
+                    <ToggleButton x:Name="ToolRedact" Style="{StaticResource ToolToggle}" Content="Mark for Redaction" Click="OnTool" Tag="Redact" ToolTip="Drag a box over what must be removed" />
+                    <Button Style="{StaticResource Cmd}" Content="Find and Redact..." Click="OnRedactPatterns" ToolTip="Find numbers, emails and other private details" />
+                    <Button Style="{StaticResource Cmd}" Content="Apply Redactions" Click="OnApplyRedactions" ToolTip="Permanently remove everything under the marked boxes" />
+                    <Button Style="{StaticResource Cmd}" Content="Clear Redaction Boxes" Click="OnClearRedactions" />
+                    <Button Style="{StaticResource Cmd}" Content="Remove Hidden Data" Click="OnSanitize" ToolTip="Take out properties, metadata, scripts and embedded files" />
+                    <Button Style="{StaticResource Cmd}" Content="Sign Document..." Click="OnSign" ToolTip="Sign with a certificate on this computer" />
+                    <Button Style="{StaticResource Cmd}" Content="Check Signatures" Click="OnCheckSignatures" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="Review">
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource Cmd}" Content="Compare With Another File..." Click="OnCompare" />
+                    <Button Style="{StaticResource Cmd}" Content="Document Info..." Click="OnEditInfo" />
+                    <Button Style="{StaticResource Cmd}" Content="Reduce File Size" Click="OnCompress" />
+                </WrapPanel>
+            </TabItem>
+            <TabItem Header="Convert">
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Style="{StaticResource Cmd}" Content="Export Pages as Images..." Click="OnExportImages" />
+                    <Button Style="{StaticResource Cmd}" Content="Export Text..." Click="OnExportText" />
+                    <Button Style="{StaticResource Cmd}" Content="Pictures to PDF..." Click="OnImagesToPdf" />
+                </WrapPanel>
+            </TabItem>        </TabControl>
 
-        <Border Grid.Row="1" Margin="0,20,0,0" Padding="16,12" CornerRadius="8" BorderThickness="1"
-                BorderBrush="{StaticResource AccentBrush}">
-            <TextBlock TextWrapping="Wrap" x:Name="StatusText" />
-        </Border>
+        <!-- document area -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" MinWidth="160" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <!-- Updates: looks only when the button is pressed; installs only a release that carries Pagjoro's signature -->
-        <StackPanel Grid.Row="2" Margin="0,20,0,0">
-            <TextBlock Text="Updates" FontSize="16" FontWeight="SemiBold" />
-            <TextBlock Margin="0,4,0,8" Opacity="0.75" TextWrapping="Wrap"
-                       Text="Pagjoro looks for a newer version only when you press the button. It contacts GitHub, sends nothing about you or your files, and installs a new version only if it carries Pagjoro's release signature. Your current copy is kept as a backup in the same folder." />
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="CheckButton" Content="Check for Updates" Padding="14,6" Click="OnCheck" />
-                <Button x:Name="InstallButton" Content="Download and Install" Padding="14,6" Margin="12,0,0,0" Visibility="Collapsed" Click="OnInstall" />
-            </StackPanel>
-            <TextBlock x:Name="UpdateText" Margin="0,8,0,0" TextWrapping="Wrap" />
-        </StackPanel>
+            <TabControl x:Name="SideTabs" Grid.Column="0">
+                <TabItem Header="Pages">
+                    <ListBox x:Name="Thumbs" SelectionMode="Extended" SelectionChanged="OnThumbSelected" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             AllowDrop="True" PreviewMouseMove="OnThumbDragStart" Drop="OnThumbDrop" HorizontalContentAlignment="Center">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="4">
+                                    <Border BorderBrush="Gray" BorderThickness="1" Background="White">
+                                        <Image Source="{Binding Image}" Width="150" Height="{Binding ThumbHeight}" Stretch="Uniform" />
+                                    </Border>
+                                    <TextBlock Text="{Binding Label}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </TabItem>
+                <TabItem Header="Outline">
+                    <ListBox x:Name="Outline" SelectionChanged="OnOutlineSelected">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Title}" Margin="{Binding Indent}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </TabItem>
+                <TabItem Header="Marks">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Bottom" Content="Remove Selected Mark" Margin="6" Click="OnRemoveMark" />
+                        <ListBox x:Name="MarksList" SelectionChanged="OnMarkSelected">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="2">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Opacity="0.75" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
 
-        <TextBlock Grid.Row="3" Margin="0,24,0,8" Text="About Pagjoro" FontSize="16" FontWeight="SemiBold"
-                   VerticalAlignment="Top" />
-        <TextBox Grid.Row="3" Margin="0,52,0,0" x:Name="AboutBox" IsReadOnly="True" TextWrapping="Wrap"
-                 VerticalScrollBarVisibility="Auto" BorderThickness="0" Background="Transparent" />
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,16,0,0">
-            <TextBlock>
-                <Hyperlink NavigateUri="https://github.com/Tusivo/Pagjoro" RequestNavigate="OnLink">Source code on GitHub</Hyperlink>
-            </TextBlock>
-            <TextBlock Margin="24,0,0,0">
-                <Hyperlink NavigateUri="mailto:info@tusivo.com" RequestNavigate="OnLink">info@tusivo.com</Hyperlink>
-            </TextBlock>
-            <TextBlock Margin="24,0,0,0" x:Name="LicenseText" Opacity="0.75" />
-        </StackPanel>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <!-- search -->
+                <Border x:Name="SearchBar" Grid.Row="0" Padding="8,6" BorderThickness="0,0,0,1" BorderBrush="Gray" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Find" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBox x:Name="SearchBox" Width="260" KeyDown="OnSearchKey" />
+                        <Button Content="Find" Margin="6,0,0,0" Padding="10,4" Click="OnSearch" />
+                        <Button Content="Previous" Margin="6,0,0,0" Padding="10,4" Click="OnSearchPrev" />
+                        <Button Content="Next" Margin="6,0,0,0" Padding="10,4" Click="OnSearchNext" />
+                        <CheckBox x:Name="CaseBox" Content="Match case" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        <CheckBox x:Name="WordBox" Content="Whole words" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="SearchCount" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        <Button Content="Close" Margin="12,0,0,0" Padding="10,4" Click="OnCloseSearch" />
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer x:Name="Scroller" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#FF7A7F85">
+                    <local:DocumentView x:Name="View" xmlns:local="clr-namespace:Pagjoro.App" />
+                </ScrollViewer>
+
+                <!-- shown until a file is open -->
+                <Border x:Name="Welcome" Grid.Row="1">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                        <TextBlock Text="Pagjoro" FontSize="40" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Free PDF tools that run on your own computer." Opacity="0.75" HorizontalAlignment="Center" Margin="0,4,0,24" />
+                        <Button Content="Open a PDF..." Padding="28,12" FontSize="16" HorizontalAlignment="Center" Click="OnOpen" />
+                        <TextBlock Text="Or drag a PDF file onto this window." Opacity="0.65" HorizontalAlignment="Center" Margin="0,14,0,0" />
+                        <TextBlock x:Name="RecentTitle" Text="Recent files" FontWeight="SemiBold" Margin="0,28,0,6" Visibility="Collapsed" />
+                        <ItemsControl x:Name="RecentList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Margin="0,2">
+                                        <Hyperlink NavigateUri="{Binding Path}" RequestNavigate="OnRecent"><Run Text="{Binding Name, Mode=OneWay}" /></Hyperlink>
+                                        <Run Text="{Binding Folder, Mode=OneWay}" Foreground="Gray" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- status -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem><TextBlock x:Name="PageStatus" Text="" /></StatusBarItem>
+            <StatusBarItem><TextBlock x:Name="ZoomStatus" Text="" /></StatusBarItem>
+            <StatusBarItem><TextBlock x:Name="MessageStatus" Text="" /></StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right"><TextBlock x:Name="VersionStatus" Opacity="0.7" /></StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>
