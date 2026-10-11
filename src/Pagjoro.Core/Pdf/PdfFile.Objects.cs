@@ -101,17 +101,17 @@ public sealed partial class PdfFile
                 var m = new FS_MATRIX_();
                 fpdf_edit.FPDFPageObjGetMatrix(obj, m);
                 var angle = Math.Atan2(m.B, m.A);
-                var useFont = font is not null && StandardFonts.Contains(font) ? font : info.Font;
+                var useFont = font is not null && (StandardFonts.Contains(font) || InstalledFonts.IsSystem(font)) ? font : info.Font;
                 var useSize = size ?? info.Size;
                 var useColor = color ?? info.Color;
                 if (fpdf_edit.FPDFPageRemoveObject(page, obj) == 0) throw new PdfException("That text could not be changed.");
                 fpdf_edit.FPDFPageObjDestroy(obj);
 
-                var safe = new string(newText.Select(c => c is '\r' or '\n' ? ' ' : c < 0x20 || c > 0xFF ? '?' : c).ToArray());
+                var safe = FitToFont(newText, useFont);
                 if (safe.Trim().Length > 0)
                 {
                     var utf16 = PdfEngine.Utf16(safe);
-                    var neu = fpdf_edit.FPDFPageObjNewTextObj(Doc, useFont, (float)useSize) ?? throw new PdfException("Pagjoro could not add the text.");
+                    var neu = NewTextObject(useFont, useSize) ?? throw new PdfException("Pagjoro could not add the text.");
                     fpdf_edit.FPDFTextSetText(neu, ref utf16[0]);
                     fpdf_edit.FPDFPageObjSetFillColor(neu, useColor.R, useColor.G, useColor.B, 255);
                     fpdf_edit.FPDFPageObjTransform(neu, Math.Cos(angle), Math.Sin(angle), -Math.Sin(angle), Math.Cos(angle), m.E, m.F);

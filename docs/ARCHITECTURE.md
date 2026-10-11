@@ -30,7 +30,7 @@ Every one of these was reviewed against `LEGAL.md` and is listed in `THIRD-PARTY
 - **One engine at a time.** PDFium is not thread safe, so every call goes through `PdfEngine.Gate`.
 - **Form fields are drawn separately.** PDFium's page renderer leaves them out; `PdfFile.Render` draws them with the form-fill layer.
 - **Redaction.** Marks that touch an area are removed. A text line is cut at the covered letters and the rest is re-set in a built-in font. Pictures have only the covered pixels blanked. A page whose content sits inside an embedded form object cannot be edited in place, so it is turned into a picture with the areas blacked out.
-- **Editing text.** The PDF format has no "paragraph", only runs of letters. Pagjoro replaces a run and re-sets it in a built-in font at the same place; it does not try to reflow a page.
+- **Editing text.** The PDF format has no "paragraph", only runs of letters. Pagjoro replaces a run and re-sets it at the same place in a built-in font or an installed Windows font; it does not try to reflow a page. A Windows font is embedded in the document once, however much text uses it.
 - **Two libraries, one file.** PDFium edits page content and marks; PDFsharp edits the document's structure (bookmarks, attachments, signatures). Each operation hands the other a freshly saved copy of the bytes, never a shared object.
 
 ## Updates

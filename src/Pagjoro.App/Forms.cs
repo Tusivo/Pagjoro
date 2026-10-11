@@ -239,6 +239,18 @@ public static class Forms
     static (string Family, bool Bold, bool Italic) SplitFont(string font) =>
         (font.StartsWith("Times") ? "Serif" : font.StartsWith("Courier") ? "Fixed" : "Sans", font.Contains("Bold"), font.Contains("Italic") || font.Contains("Oblique"));
 
+    /// <summary>The fonts offered: the three built-in families, then every installed family Pagjoro knows.</summary>
+    static List<string> FontChoices() =>
+        ["Sans (built in)", "Serif (built in)", "Fixed width (built in)", .. InstalledFonts.Families.Select(f => f.Name)];
+
+    /// <summary>The font spec for a choice of <see cref="FontChoices"/> with a weight and slant.</summary>
+    static string FontSpecFor(int index, bool bold, bool italic)
+    {
+        if (index >= 3 && index - 3 < InstalledFonts.Families.Count)
+            return InstalledFonts.Spec(InstalledFonts.Families[index - 3].Name, bold, italic) ?? JoinFont("Sans", bold, italic);
+        return JoinFont(index == 1 ? "Serif" : index == 2 ? "Fixed" : "Sans", bold, italic);
+    }
+
     public static string JoinFont(string family, bool bold, bool italic) => family switch
     {
         "Serif" => bold ? (italic ? "Times-BoldItalic" : "Times-Bold") : (italic ? "Times-Italic" : "Times-Roman"),
@@ -253,10 +265,10 @@ public static class Forms
     public static TextEditChoice? EditText(Window? owner, PageObjectInfo info)
     {
         var f = new FormBuilder(owner, "Edit Text", 560);
-        f.Note("Change the words, then press Apply. The text is set in a standard font at the same place; letters outside the standard fonts become a question mark.");
+        f.Note("Change the words, then press Apply. The text is set in the font you choose at the same place. A font from Windows is stored inside the document, so the file grows by the size of that font (it is stored once however much text uses it).");
         var text = f.Text("Text", info.Text);
         var (family, bold, italic) = SplitFont(info.Font);
-        var fam = f.Choice("Font", ["Sans", "Serif", "Fixed width"], family == "Serif" ? 1 : family == "Fixed" ? 2 : 0);
+        var fam = f.Choice("Font", FontChoices(), family == "Serif" ? 1 : family == "Fixed" ? 2 : 0);
         var boldBox = f.Check("Bold", bold);
         var italicBox = f.Check("Italic", italic);
         var size = f.Text("Letter size (points)", Math.Round(info.Size, 1).ToString(System.Globalization.CultureInfo.InvariantCulture), 100);
@@ -270,8 +282,7 @@ public static class Forms
                 !double.TryParse(size.Text, out s)) { Dialogs.Info(f.Window, "Edit Text", "Type a letter size, such as 12."); return false; }
             if (s < 4 || s > 300) { Dialogs.Info(f.Window, "Edit Text", "Type a letter size between 4 and 300."); return false; }
             var chosen = TextColours[colour.SelectedIndex].Color ?? info.Color;
-            var fontFamily = fam.SelectedIndex == 1 ? "Serif" : fam.SelectedIndex == 2 ? "Fixed" : "Sans";
-            result = new TextEditChoice(delete.IsChecked == true, text.Text, JoinFont(fontFamily, boldBox.IsChecked == true, italicBox.IsChecked == true), s, chosen);
+            result = new TextEditChoice(delete.IsChecked == true, text.Text, FontSpecFor(fam.SelectedIndex, boldBox.IsChecked == true, italicBox.IsChecked == true), s, chosen);
             return true;
         })) return null;
         return result;
@@ -357,7 +368,7 @@ public static class Forms
         var f = new FormBuilder(owner, "Add Text", 540);
         var text = f.Text("Text (press Enter for a new line)", "");
         text.AcceptsReturn = true; text.TextWrapping = TextWrapping.Wrap; text.Height = 90; text.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-        var fam = f.Choice("Font", ["Sans", "Serif", "Fixed width"]);
+        var fam = f.Choice("Font", FontChoices());
         var bold = f.Check("Bold");
         var italic = f.Check("Italic");
         var sizeBox = f.Text("Letter size (points)", "12", 100);
@@ -369,8 +380,7 @@ public static class Forms
             if (!double.TryParse(sizeBox.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && !double.TryParse(sizeBox.Text, out s))
             { Dialogs.Info(f.Window, "Add Text", "Type a letter size, such as 12."); return false; }
             if (s < 4 || s > 200) { Dialogs.Info(f.Window, "Add Text", "Type a letter size between 4 and 200."); return false; }
-            var family = fam.SelectedIndex == 1 ? "Serif" : fam.SelectedIndex == 2 ? "Fixed" : "Sans";
-            result = new NewText(text.Text.Replace("\r\n", "\n"), s, JoinFont(family, bold.IsChecked == true, italic.IsChecked == true), TextColours[colour.SelectedIndex + 1].Color!.Value);
+            result = new NewText(text.Text.Replace("\r\n", "\n"), s, FontSpecFor(fam.SelectedIndex, bold.IsChecked == true, italic.IsChecked == true), TextColours[colour.SelectedIndex + 1].Color!.Value);
             return true;
         })) return null;
         return result;

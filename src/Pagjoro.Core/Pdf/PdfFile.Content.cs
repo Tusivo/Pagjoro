@@ -39,15 +39,14 @@ public sealed partial class PdfFile
     public PageRect AddText(int pageIndex, string text, double x, double y, double fontSize, PdfColor color, string font = "Helvetica", double rotationDegrees = 0)
     {
         Check(); ValidatePage(pageIndex);
-        if (!StandardFonts.Contains(font)) font = "Helvetica";
-        var safe = new string(text.Select(c => c < 0x20 || c > 0xFF ? '?' : c).ToArray());
-        var utf16 = PdfEngine.Utf16(safe);
+        if (!InstalledFonts.IsSystem(font) && !StandardFonts.Contains(font)) font = "Helvetica";
+        var utf16 = PdfEngine.Utf16(FitToFont(text, font));
         lock (PdfEngine.Gate)
         {
             var page = fpdfview.FPDF_LoadPage(Doc, pageIndex);
             try
             {
-                var obj = fpdf_edit.FPDFPageObjNewTextObj(Doc, font, (float)fontSize) ?? throw new PdfException("Pagjoro could not add text.");
+                var obj = NewTextObject(font, fontSize) ?? throw new PdfException("Pagjoro could not add text.");
                 fpdf_edit.FPDFTextSetText(obj, ref utf16[0]);
                 fpdf_edit.FPDFPageObjSetFillColor(obj, color.R, color.G, color.B, color.A);
                 var r = rotationDegrees * Math.PI / 180;
@@ -67,12 +66,11 @@ public sealed partial class PdfFile
     public (double Width, double Height) MeasureText(string text, double fontSize, string font = "Helvetica")
     {
         Check();
-        if (!StandardFonts.Contains(font)) font = "Helvetica";
-        var safe = new string(text.Select(c => c < 0x20 || c > 0xFF ? '?' : c).ToArray());
-        var utf16 = PdfEngine.Utf16(safe);
+        if (!InstalledFonts.IsSystem(font) && !StandardFonts.Contains(font)) font = "Helvetica";
+        var utf16 = PdfEngine.Utf16(FitToFont(text, font));
         lock (PdfEngine.Gate)
         {
-            var obj = fpdf_edit.FPDFPageObjNewTextObj(Doc, font, (float)fontSize);
+            var obj = NewTextObject(font, fontSize);
             if (obj is null) return (0, 0);
             try
             {

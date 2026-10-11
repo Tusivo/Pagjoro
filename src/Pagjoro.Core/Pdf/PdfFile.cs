@@ -79,7 +79,7 @@ public sealed partial class PdfFile : IDisposable
     {
         if (disposed) return;
         disposed = true;
-        lock (PdfEngine.Gate) fpdfview.FPDF_CloseDocument(Doc);
+        lock (PdfEngine.Gate) { CloseFonts(); fpdfview.FPDF_CloseDocument(Doc); }
         if (pin.IsAllocated) pin.Free();
         source = null;
     }

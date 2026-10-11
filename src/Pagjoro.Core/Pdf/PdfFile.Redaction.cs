@@ -179,16 +179,18 @@ public sealed partial class PdfFile
             var k1 = k0;
             while (k1 + 1 < s.Length && keep[k1 + 1]) k1++;
             var piece = s.Substring(k0, k1 - k0 + 1);
-            if (piece.Trim().Length > 0 && !piece.Any(c => c > 0xFF))
+            if (piece.Trim().Length > 0)
             {
+                var runFont = font;
+                if (piece.Any(c => c > 0xFF))
+                {
+                    runFont = InstalledFonts.Wide() ?? "";
+                    if (runFont.Length == 0) return false;   // no font that can show these letters: remove the whole line instead
+                }
                 double ox = 0, oy = 0;
                 fpdf_text.FPDFTextGetCharOrigin(textPage, start + k0, ref ox, ref oy);
                 var angle = fpdf_text.FPDFTextGetCharAngle(textPage, start + k0);
-                runs.Add((piece.TrimEnd(), font, size, color, ox, oy, angle * 180 / Math.PI, boxOf[k1].R - boxOf[k0].L));
-            }
-            else if (piece.Trim().Length > 0)
-            {
-                return false;   // letters outside the built-in fonts cannot be re-set faithfully: remove the whole line instead
+                runs.Add((piece.TrimEnd(), runFont, size, color, ox, oy, angle * 180 / Math.PI, boxOf[k1].R - boxOf[k0].L));
             }
             k0 = k1 + 1;
         }
@@ -242,7 +244,7 @@ public sealed partial class PdfFile
     void InsertRetypedRun(FpdfPageT page, (string Text, string Font, double Size, PdfColor Color, double X, double Y, double Angle, double Width) run)
     {
         var utf16 = PdfEngine.Utf16(run.Text);
-        var obj = fpdf_edit.FPDFPageObjNewTextObj(Doc, run.Font, (float)run.Size);
+        var obj = NewTextObject(run.Font, run.Size);
         if (obj is null) return;
         fpdf_edit.FPDFTextSetText(obj, ref utf16[0]);
         fpdf_edit.FPDFPageObjSetFillColor(obj, run.Color.R, run.Color.G, run.Color.B, run.Color.A);

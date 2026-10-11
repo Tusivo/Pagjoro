@@ -17,6 +17,7 @@ Pagjoro is licensed under the GNU Affero General Public License 3.0 or later. Th
 | Windows Image Acquisition | Scanning | Part of Windows |
 | Microsoft Office (if installed) | Turning Word, Excel and PowerPoint files into PDF | The person's own license |
 | LibreOffice (if installed) | The same, as a free alternative | MPL-2.0 |
+| Fonts installed in Windows | Text the person adds or edits can use them; the font is then stored inside that document | Each font's own license (the person is responsible for using a font as its license allows) |
 
 Pagjoro starts these programs; it does not include or modify them.
 

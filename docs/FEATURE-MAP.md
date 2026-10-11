@@ -71,9 +71,9 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 ## Phase 5: Edit content
 | Feature | State | Notes |
 |---|---|---|
-| Edit text on the page | ◐ | A line is replaced and re-set in a standard font at the same place; fonts are not matched exactly |
+| Edit text on the page | ◐ | A line is replaced and re-set at the same place in a font of your choice; the original font is not reused |
 | Replace, delete and move pictures and text | ✔ | |
-| Add text (font, size, colour, several lines) and pictures | ✔ | |
+| Add text (font, size, colour, several lines) and pictures | ✔ | The twelve built-in fonts, and about twenty families installed in Windows, with Latin, Greek and Cyrillic letters |
 | Headers, footers, page numbers | ✔ | |
 | Watermarks | ✔ | |
 | Bates numbering | ✔ | |
