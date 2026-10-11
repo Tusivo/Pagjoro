@@ -81,18 +81,40 @@ public sealed class IconExtension : MarkupExtension
         ["Marks"]     = (Group.Slate, "M4 5 H20 V16 H11 L6 20 V16 H4 Z", null),
     };
 
-    static bool? dark;
-    static bool IsDark()
+    static bool dark = SystemIsDark();
+
+    static bool SystemIsDark()
     {
-        if (dark is { } d) return d;
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            dark = key?.GetValue("AppsUseLightTheme") is int v && v == 0;
+            return key?.GetValue("AppsUseLightTheme") is int v && v == 0;
         }
-        catch (Exception) { dark = false; }
-        return dark.Value;
+        catch (Exception) { return false; }
     }
+
+    /// <summary>True when the window has a dark background: icons use their lighter colours. Setting it recolours every icon already on screen.</summary>
+    public static bool Dark
+    {
+        get => dark;
+        set
+        {
+            dark = value;
+            live.RemoveAll(w => !w.TryGetTarget(out _));
+            foreach (var w in live) if (w.TryGetTarget(out var icon)) icon.Apply();
+        }
+    }
+
+    sealed class Live(Group group, Path line, Path? solid)
+    {
+        public void Apply()
+        {
+            var brush = new SolidColorBrush(Palette[(int)group][dark ? 1 : 0]); brush.Freeze();
+            line.Stroke = brush;
+            if (solid is not null) solid.Fill = brush;
+        }
+    }
+    static readonly List<WeakReference<Live>> live = [];
 
     public override object ProvideValue(IServiceProvider serviceProvider) => Create(Key, Size);
 
@@ -100,17 +122,22 @@ public sealed class IconExtension : MarkupExtension
     public static UIElement Create(string key, double size = 18)
     {
         if (!Shapes.TryGetValue(key, out var shape)) return new Border { Width = size, Height = size };
-        var color = Palette[(int)shape.Group][IsDark() ? 1 : 0];
-        var brush = new SolidColorBrush(color); brush.Freeze();
         var grid = new Grid { Width = size, Height = size, IsHitTestVisible = false };
         var host = new Viewbox { Stretch = Stretch.Uniform, Child = new Canvas { Width = 24, Height = 24 } };
         var canvas = (Canvas)host.Child;
-        canvas.Children.Add(new Path
+        var line = new Path
         {
-            Data = Geometry.Parse(shape.Line), Stroke = brush, StrokeThickness = 2.3,
+            Data = Geometry.Parse(shape.Line), StrokeThickness = 2.3,
             StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, StrokeLineJoin = PenLineJoin.Round,
-        });
-        if (shape.Solid is not null) canvas.Children.Add(new Path { Data = Geometry.Parse(shape.Solid), Fill = brush });
+        };
+        canvas.Children.Add(line);
+        Path? solid = null;
+        if (shape.Solid is not null) { solid = new Path { Data = Geometry.Parse(shape.Solid) }; canvas.Children.Add(solid); }
+        var icon = new Live(shape.Group, line, solid);
+        icon.Apply();
+        live.Add(new WeakReference<Live>(icon));
+        // keep the recolouring object alive as long as the element is
+        grid.Tag = icon;
         grid.Children.Add(host);
         return grid;
     }

@@ -16,8 +16,7 @@ public partial class MainWindow
 
     void InitMenusAndToolbar()
     {
-        ZoomBox.ItemsSource = ZoomLevels;
-        RebuildRecentMenu();
+        ZoomBox.ItemsSource = ZoomLevels;        RebuildRecentMenu();
     }
 
     void RebuildRecentMenu()

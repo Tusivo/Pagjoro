@@ -79,6 +79,7 @@ public partial class MainWindow : Window
         View.StatusMessage += s => MessageStatus.Text = s;
         WireTools();
         InitMenusAndToolbar();
+        InitTheme();
         ShowRecent();
         Loaded += (_, _) =>
         {

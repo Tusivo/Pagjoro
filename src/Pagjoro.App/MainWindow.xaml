@@ -6,6 +6,28 @@
         WindowStartupLocation="CenterScreen" AllowDrop="True" Drop="OnDrop" Closing="OnClosing">
     <Window.Resources>
         <!-- toolbar buttons: no box at rest, just the icon; a soft tint on hover and while a tool is on -->
+        <!-- a slim menu bar: each top-level title is a small, flat header with its own drop-down -->
+        <SolidColorBrush x:Key="MenuPopupBrush" Color="#2B2B2B" />
+        <ControlTemplate x:Key="SlimHeader" TargetType="MenuItem">
+            <Grid>
+                <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Padding="9,2">
+                    <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center" />
+                </Border>
+                <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsSubmenuOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                    <Border Background="{DynamicResource MenuPopupBrush}" BorderBrush="#40808080" BorderThickness="1" CornerRadius="6" Padding="3" Margin="0,2,8,8" MinWidth="190">
+                        <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.35" /></Border.Effect>
+                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle" Grid.IsSharedSizeScope="True" />
+                    </Border>
+                </Popup>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Bd" Property="Background" Value="#26808080" /></Trigger>
+                <Trigger Property="IsSubmenuOpen" Value="True"><Setter TargetName="Bd" Property="Background" Value="#33808080" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <Style x:Key="SlimMenuItem" TargetType="MenuItem">
+            <Setter Property="Template" Value="{StaticResource SlimHeader}" />
+        </Style>
         <Style x:Key="Tb" TargetType="Button">
             <Setter Property="Padding" Value="6,5" />
             <Setter Property="Margin" Value="1,0" />
@@ -82,7 +104,16 @@
 
         <!-- menus and the always-visible toolbar -->
         <StackPanel Grid.Row="0">
-            <Menu x:Name="MainMenu">
+            <DockPanel x:Name="MenuRow" LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,10,2">
+                    <TextBlock Text="Theme" VerticalAlignment="Center" Margin="0,0,6,0" Opacity="0.8" />
+                    <ComboBox x:Name="ThemeBox" Width="92" Height="22" MinHeight="0" Padding="8,0" VerticalContentAlignment="Center" ToolTip="Colours of the window" SelectionChanged="OnThemePicked">
+                        <ComboBoxItem Content="Dark" Tag="dark" />
+                        <ComboBoxItem Content="Light" Tag="light" />
+                        <ComboBoxItem Content="Night" Tag="night" />
+                    </ComboBox>
+                </StackPanel>
+            <Menu x:Name="MainMenu" Background="Transparent" ItemContainerStyle="{StaticResource SlimMenuItem}" VerticalAlignment="Center">
                 <MenuItem Header="_File">
                     <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="OnOpen" />
                     <MenuItem x:Name="RecentMenu" Header="Open _Recent" />
@@ -188,8 +219,9 @@
                     <MenuItem Header="_Support the Project" Click="OnSupport" />
                 </MenuItem>
             </Menu>
+            </DockPanel>
 
-            <ToolBarTray IsLocked="True">
+            <ToolBarTray x:Name="Tray" IsLocked="True">
                 <ToolBar Band="0" BandIndex="0">
                     <Button Style="{StaticResource Tb}" Content="{local:Icon Open}" Click="OnOpen" ToolTip="Open a PDF (Ctrl+O)" />
                     <Button Style="{StaticResource Tb}" Content="{local:Icon Save}" Click="OnSave" ToolTip="Save (Ctrl+S)" />
@@ -346,7 +378,7 @@
         </Grid>
 
         <!-- status -->
-        <StatusBar Grid.Row="2">
+        <StatusBar x:Name="Status" Grid.Row="2">
             <StatusBarItem><TextBlock x:Name="PageStatus" Text="" /></StatusBarItem>
             <StatusBarItem><TextBlock x:Name="ZoomStatus" Text="" /></StatusBarItem>
             <StatusBarItem><TextBlock x:Name="MessageStatus" Text="" /></StatusBarItem>
