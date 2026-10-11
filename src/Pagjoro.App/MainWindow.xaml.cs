@@ -68,6 +68,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        StartupBounds.Apply(this);
         Title = AppInfo.Name;
         VersionStatus.Text = "Pagjoro " + AppInfo.Version;
         Thumbs.ItemsSource = thumbs;

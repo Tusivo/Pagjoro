@@ -25,14 +25,14 @@ It asks you to choose a passphrase (8 or more characters), then:
    node scripts/release-sign.js sign dist\Pagjoro.exe
    ```
    It asks for the passphrase, writes `dist\Pagjoro.exe.sig` and checks the result against the public key before finishing. The version signed is the one in `Directory.Build.props`.
-4. On GitHub, **Draft a new release** with a tag such as `v0.1.0-alpha.1`, make sure the tag points at your final commit, and attach **both** `Pagjoro.exe` and `Pagjoro.exe.sig` (and `Pagjoro.exe.sha256` if you like). Tick **Set as a pre-release** for alpha and beta versions.
+4. On GitHub, **Draft a new release** with a tag such as `v0.6.0-alpha.1`, make sure the tag points at your final commit, and attach **both** `Pagjoro.exe` and `Pagjoro.exe.sig` (and `Pagjoro.exe.sha256` if you like). Tick **Set as a pre-release** for alpha and beta versions.
 
 A signature is tied to one version and one exact file: change the program after signing and it must be signed again.
 
 ## Checking a release yourself
 
 ```
-node scripts/release-sign.js verify dist\Pagjoro.exe --version 0.1.0-alpha.1
+node scripts/release-sign.js verify dist\Pagjoro.exe --version 0.6.0-alpha.1
 ```
 
 ## Good to know

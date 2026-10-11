@@ -2,7 +2,7 @@
 
 **Free, open-source PDF tools that run on your own computer.** View, annotate, edit, sign, merge, split, convert and protect PDF files, with no subscription, no account and nothing uploaded.
 
-> **Status: v0.1.0-alpha.1, early development.** Pagjoro is just getting started. The foundations are in place and the PDF tools are being added phase by phase (see the [roadmap](#roadmap)). It is **not ready for real documents yet**, so please do not rely on it for anything important.
+> **Status: v0.6.0-alpha.1, early development.** Pagjoro is just getting started. The foundations are in place and the PDF tools are being added phase by phase (see the [roadmap](#roadmap)). It is **not ready for real documents yet**, so please do not rely on it for anything important.
 
 ## Why Pagjoro
 
