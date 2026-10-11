@@ -10,7 +10,7 @@ using Pagjoro.Core.Pdf;
 
 namespace Pagjoro.App;
 
-public enum ViewTool { Select, Highlight, Underline, Strikeout, Note, Draw, Rectangle, Ellipse, Redact, Text, Image, SignArea }
+public enum ViewTool { Select, Highlight, Underline, Strikeout, Note, Draw, Rectangle, Ellipse, Redact, Text, Image, SignArea, TextField, CheckField }
 
 /// <summary>
 /// Shows a document as a vertical strip of pages and handles the mouse for selecting text, marking it and drawing. It lives inside a
@@ -317,7 +317,7 @@ public sealed class DocumentView : FrameworkElement
             var fill = new SolidColorBrush(Color.FromArgb(110, 220, 20, 20)); var pen = new Pen(Brushes.Red, 1.5);
             foreach (var d in doc.RectsToDevice(page, vw, vh, boxes)) dc.DrawRectangle(fill, pen, Map(d));
         }
-        if (dragging && dragPage == page && Tool is ViewTool.Rectangle or ViewTool.Ellipse or ViewTool.Redact or ViewTool.Image or ViewTool.SignArea)
+        if (dragging && dragPage == page && Tool is ViewTool.Rectangle or ViewTool.Ellipse or ViewTool.Redact or ViewTool.Image or ViewTool.SignArea or ViewTool.TextField or ViewTool.CheckField)
         {
             var r = new Rect(dragFrom, dragTo);
             var pen = new Pen(Tool == ViewTool.Redact ? Brushes.Red : new SolidColorBrush(Color.FromRgb(220, 38, 38)), 1.5) { DashStyle = DashStyles.Dash };
@@ -465,7 +465,7 @@ public sealed class DocumentView : FrameworkElement
                     var tp = ToPagePoint(page, rect, dragTo);
                     TextRequested?.Invoke(page, tp.X, tp.Y);
                     break;
-                case ViewTool.Image or ViewTool.SignArea when moved:
+                case ViewTool.Image or ViewTool.SignArea or ViewTool.TextField or ViewTool.CheckField when moved:
                     var chosen = doc.DeviceRectToPage(page, vw, vh, (Math.Min(dragFrom.X, dragTo.X) - rect.Left) * MapScale, (Math.Min(dragFrom.Y, dragTo.Y) - rect.Top) * MapScale,
                         (Math.Max(dragFrom.X, dragTo.X) - rect.Left) * MapScale, (Math.Max(dragFrom.Y, dragTo.Y) - rect.Top) * MapScale);
                     AreaChosen?.Invoke(Tool, page, chosen);

@@ -77,6 +77,7 @@ public partial class MainWindow
             SignNow(choice, page, area);
             return;
         }
+        if (tool is ViewTool.TextField or ViewTool.CheckField) { AddField(tool, page, area); return; }
         if (tool != ViewTool.Image) return;
         var d = new OpenFileDialog { Filter = PictureFilter, Title = "Choose a picture to place" };
         if (d.ShowDialog(this) != true) return;
@@ -350,5 +351,49 @@ public partial class MainWindow
         catch (PdfException ex) { Dialogs.Info(this, "Pagjoro", ex.Message, error: true); return; }
         MessageStatus.Text = result.Identical ? "The documents are the same." : $"{result.TotalRemoved} removed, {result.TotalAdded} added.";
         Forms.ShowComparison(this, mine.Path is null ? "this document" : Path.GetFileName(mine.Path), Path.GetFileName(d.FileName), result);
+    }
+
+    // ---- forms ------------------------------------------------------------------------------------------------------
+
+    void AddField(ViewTool tool, int page, PageRect area)
+    {
+        if (doc is null) return;
+        var isText = tool == ViewTool.TextField;
+        var existing = new HashSet<string>(PdfForms.Read(doc.ToBytes()).Select(f => f.Name), StringComparer.OrdinalIgnoreCase);
+        var suggestion = (isText ? "Text" : "Check") + (existing.Count + 1);
+        var name = Dialogs.Ask(this, isText ? "Add a Text Field" : "Add a Check Box", "Give the field a short name (for example full_name):", suggestion);
+        if (string.IsNullOrWhiteSpace(name)) return;
+        name = name.Trim();
+        if (existing.Contains(name)) { Dialogs.Info(this, "Forms", $"There is already a field called \"{name}\". Choose another name."); return; }
+        try
+        {
+            var bytes = isText ? PdfForms.AddTextField(doc.ToBytes(), page, area, name) : PdfForms.AddCheckBox(doc.ToBytes(), page, area, name);
+            PushUndo();
+            ReplaceDocument(PdfFile.FromBytes(bytes), $"Added the field \"{name}\". Save to keep it.");
+        }
+        catch (PdfException ex) { Dialogs.Info(this, "Forms", ex.Message, error: true); }
+    }
+
+    void OnFillForm(object sender, RoutedEventArgs e)
+    {
+        if (doc is null) { MessageStatus.Text = "Open a PDF first."; return; }
+        IReadOnlyList<FormField> fields;
+        try { fields = PdfForms.Read(doc.ToBytes()); }
+        catch (PdfException ex) { Dialogs.Info(this, "Forms", ex.Message, error: true); return; }
+        var fillable = fields.Where(f => !f.ReadOnly && f.Kind is FormFieldKind.Text or FormFieldKind.CheckBox or FormFieldKind.ComboBox or FormFieldKind.ListBox or FormFieldKind.RadioButton).ToList();
+        if (fillable.Count == 0)
+        {
+            Dialogs.Info(this, "Fill In Form", "This document has no form fields. To make one, use Forms > Add Text Field or Add Check Box.");
+            return;
+        }
+        var answer = Forms.FillForm(this, fillable);
+        if (answer is null) return;
+        try
+        {
+            var bytes = PdfForms.Fill(doc.ToBytes(), answer.Values, answer.Checks);
+            PushUndo();
+            ReplaceDocument(PdfFile.FromBytes(bytes), "Form filled in. Save to keep it.");
+        }
+        catch (PdfException ex) { Dialogs.Info(this, "Forms", ex.Message, error: true); }
     }
 }

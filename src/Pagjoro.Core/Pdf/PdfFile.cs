@@ -223,6 +223,7 @@ public sealed partial class PdfFile : IDisposable
             {
                 fpdfview.FPDFBitmapFillRect(bitmap, 0, 0, widthPx, heightPx, 0xFFFFFFFF);
                 fpdfview.FPDF_RenderPageBitmap(bitmap, page, 0, 0, widthPx, heightPx, 0, annotations ? 0x01 : 0);
+                if (annotations) DrawFormFields(bitmap, page, widthPx, heightPx);
                 var stride = fpdfview.FPDFBitmapGetStride(bitmap);
                 var pixels = new byte[stride * heightPx];
                 Marshal.Copy(fpdfview.FPDFBitmapGetBuffer(bitmap), pixels, 0, pixels.Length);
@@ -233,6 +234,29 @@ public sealed partial class PdfFile : IDisposable
                 fpdfview.FPDFBitmapDestroy(bitmap);
                 fpdfview.FPDF_ClosePage(page);
             }
+        }
+    }
+
+    /// <summary>The page renderer leaves form fields out; they are drawn by the form-fill layer. Caller holds the engine gate.</summary>
+    void DrawFormFields(FpdfBitmapT bitmap, FpdfPageT page, int widthPx, int heightPx)
+    {
+        var info = new FPDF_FORMFILLINFO();
+        // the structure comes back from native memory unzeroed: clear every callback so the engine calls nothing stale
+        foreach (var p in typeof(FPDF_FORMFILLINFO).GetProperties())
+            if (p.CanWrite && typeof(Delegate).IsAssignableFrom(p.PropertyType)) p.SetValue(info, null);
+        info.Version = 1;
+        var form = fpdf_formfill.FPDFDOC_InitFormFillEnvironment(Doc, info);
+        if (form is null) return;
+        try
+        {
+            fpdf_formfill.FORM_OnAfterLoadPage(page, form);
+            fpdf_formfill.FPDF_FFLDraw(form, bitmap, page, 0, 0, widthPx, heightPx, 0, 0);
+            fpdf_formfill.FORM_OnBeforeClosePage(page, form);
+        }
+        finally
+        {
+            fpdf_formfill.FPDFDOC_ExitFormFillEnvironment(form);
+            GC.KeepAlive(info);   // the engine reads this structure until the environment is gone
         }
     }
 

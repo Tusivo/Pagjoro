@@ -1,23 +1,55 @@
 <Window x:Class="Pagjoro.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Pagjoro" Width="1360" Height="860" MinWidth="900" MinHeight="560"
+        xmlns:local="clr-namespace:Pagjoro.App"
+        Title="Pagjoro" Width="1360" Height="860" MinWidth="980" MinHeight="560"
         WindowStartupLocation="CenterScreen" AllowDrop="True" Drop="OnDrop" Closing="OnClosing">
     <Window.Resources>
-        <Style x:Key="Cmd" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Margin" Value="0,0,6,6" />
-            <Setter Property="MinWidth" Value="64" />
+        <!-- toolbar buttons: no box at rest, just the icon; a soft tint on hover and while a tool is on -->
+        <Style x:Key="Tb" TargetType="Button">
+            <Setter Property="Padding" Value="6,5" />
+            <Setter Property="Margin" Value="1,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome" Background="Transparent" CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#26808080" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#40808080" /></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <Style x:Key="ToolToggle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Margin" Value="0,0,6,6" />
-            <Setter Property="MinWidth" Value="64" />
-        </Style>
-        <Style x:Key="Group" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Opacity" Value="0.65" />
-            <Setter Property="Margin" Value="0,0,12,0" />
+        <Style x:Key="TbToggle" TargetType="ToggleButton">
+            <Setter Property="Padding" Value="6,5" />
+            <Setter Property="Margin" Value="1,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Chrome" Background="Transparent" CornerRadius="5" Padding="{TemplateBinding Padding}" BorderThickness="0,0,0,2" BorderBrush="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#26808080" /></Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#33808080" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
     <Window.InputBindings>
@@ -48,106 +80,171 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- command tabs -->
-        <TabControl x:Name="Ribbon" Grid.Row="0" Padding="10,8,10,2">
-            <TabItem Header="File">
-                <WrapPanel Margin="0,8,0,0">
-                    <Button Style="{StaticResource Cmd}" Content="Open..." Click="OnOpen" ToolTip="Open a PDF (Ctrl+O)" />
-                    <Button Style="{StaticResource Cmd}" Content="Save" Click="OnSave" ToolTip="Save (Ctrl+S)" />
-                    <Button Style="{StaticResource Cmd}" Content="Save As..." Click="OnSaveAs" ToolTip="Save a copy (Ctrl+Shift+S)" />
-                    <Button Style="{StaticResource Cmd}" Content="Print..." Click="OnPrint" ToolTip="Print (Ctrl+P)" />
-                    <Button Style="{StaticResource Cmd}" Content="Undo" Click="OnUndo" ToolTip="Undo the last change (Ctrl+Z)" />
-                    <Button Style="{StaticResource Cmd}" Content="Redo" Click="OnRedo" ToolTip="Redo (Ctrl+Y)" />
-                    <Button Style="{StaticResource Cmd}" Content="Properties..." Click="OnProperties" />
-                    <Button Style="{StaticResource Cmd}" Content="Close File" Click="OnCloseFile" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="View">
-                <WrapPanel Margin="0,8,0,0">
-                    <Button Style="{StaticResource Cmd}" Content="Zoom In" Click="OnZoomIn" />
-                    <Button Style="{StaticResource Cmd}" Content="Zoom Out" Click="OnZoomOut" />
-                    <Button Style="{StaticResource Cmd}" Content="Fit Width" Click="OnFitWidth" />
-                    <Button Style="{StaticResource Cmd}" Content="Fit Page" Click="OnFitPage" />
-                    <Button Style="{StaticResource Cmd}" Content="Actual Size" Click="OnActualSize" />
-                    <Button Style="{StaticResource Cmd}" Content="Previous Page" Click="OnPrevPage" />
-                    <Button Style="{StaticResource Cmd}" Content="Next Page" Click="OnNextPage" />
-                    <Button Style="{StaticResource Cmd}" Content="Go to Page..." Click="OnGoToPage" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="Comment">
-                <WrapPanel Margin="0,8,0,0">
-                    <ToggleButton x:Name="ToolSelect" Style="{StaticResource ToolToggle}" Content="Select Text" Click="OnTool" Tag="Select" IsChecked="True" />
-                    <ToggleButton x:Name="ToolHighlight" Style="{StaticResource ToolToggle}" Content="Highlight" Click="OnTool" Tag="Highlight" ToolTip="Drag over text to highlight it" />
-                    <ToggleButton x:Name="ToolUnderline" Style="{StaticResource ToolToggle}" Content="Underline" Click="OnTool" Tag="Underline" />
-                    <ToggleButton x:Name="ToolStrike" Style="{StaticResource ToolToggle}" Content="Strike Through" Click="OnTool" Tag="Strikeout" />
-                    <ToggleButton x:Name="ToolNote" Style="{StaticResource ToolToggle}" Content="Note" Click="OnTool" Tag="Note" ToolTip="Click where the note should go" />
-                    <ToggleButton x:Name="ToolDraw" Style="{StaticResource ToolToggle}" Content="Draw" Click="OnTool" Tag="Draw" />
-                    <ToggleButton x:Name="ToolRect" Style="{StaticResource ToolToggle}" Content="Rectangle" Click="OnTool" Tag="Rectangle" />
-                    <ToggleButton x:Name="ToolOval" Style="{StaticResource ToolToggle}" Content="Oval" Click="OnTool" Tag="Ellipse" />
-                    <TextBlock Text="Colour" VerticalAlignment="Center" Margin="12,0,6,6" />
-                    <ComboBox x:Name="ColorBox" Width="110" Margin="0,0,6,6" SelectionChanged="OnColor" SelectedIndex="0">
+        <!-- menus and the always-visible toolbar -->
+        <StackPanel Grid.Row="0">
+            <Menu x:Name="MainMenu">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="OnOpen" />
+                    <MenuItem x:Name="RecentMenu" Header="Open _Recent" />
+                    <Separator />
+                    <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="OnSave" />
+                    <MenuItem Header="Save _As..." InputGestureText="Ctrl+Shift+S" Click="OnSaveAs" />
+                    <Separator />
+                    <MenuItem Header="_Print..." InputGestureText="Ctrl+P" Click="OnPrint" />
+                    <MenuItem Header="Document _Properties..." Click="OnProperties" />
+                    <Separator />
+                    <MenuItem Header="_Close File" Click="OnCloseFile" />
+                    <MenuItem Header="E_xit" Click="OnExit" />
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" Click="OnUndo" />
+                    <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" Click="OnRedo" />
+                    <Separator />
+                    <MenuItem Header="_Copy Selected Text" InputGestureText="Ctrl+C" Click="OnCopy" />
+                    <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="OnFocusSearch" />
+                    <Separator />
+                    <MenuItem Header="Add _Text" Click="OnToolMenu" Tag="Text" />
+                    <MenuItem Header="Add _Picture" Click="OnToolMenu" Tag="Image" />
+                    <MenuItem Header="_Watermark..." Click="OnWatermark" />
+                    <MenuItem Header="_Header and Footer..." Click="OnHeaderFooter" />
+                    <MenuItem Header="_Page Numbers..." Click="OnPageNumbers" />
+                    <MenuItem Header="_Bates Numbers..." Click="OnBates" />
+                    <MenuItem Header="F_latten Marks" Click="OnFlatten" />
+                </MenuItem>
+                <MenuItem Header="_View">
+                    <MenuItem Header="Zoom _In" Click="OnZoomIn" />
+                    <MenuItem Header="Zoom _Out" Click="OnZoomOut" />
+                    <MenuItem Header="Fit _Width" Click="OnFitWidth" />
+                    <MenuItem Header="Fit _Page" Click="OnFitPage" />
+                    <MenuItem Header="_Actual Size" Click="OnActualSize" />
+                    <Separator />
+                    <MenuItem Header="_Previous Page" Click="OnPrevPage" />
+                    <MenuItem Header="_Next Page" Click="OnNextPage" />
+                    <MenuItem Header="_Go to Page..." Click="OnGoToPage" />
+                </MenuItem>
+                <MenuItem Header="_Comment">
+                    <MenuItem Header="_Select Text" Click="OnToolMenu" Tag="Select" />
+                    <MenuItem Header="_Highlight" Click="OnToolMenu" Tag="Highlight" />
+                    <MenuItem Header="_Underline" Click="OnToolMenu" Tag="Underline" />
+                    <MenuItem Header="S_trike Through" Click="OnToolMenu" Tag="Strikeout" />
+                    <MenuItem Header="_Note" Click="OnToolMenu" Tag="Note" />
+                    <MenuItem Header="_Draw" Click="OnToolMenu" Tag="Draw" />
+                    <MenuItem Header="_Rectangle" Click="OnToolMenu" Tag="Rectangle" />
+                    <MenuItem Header="_Oval" Click="OnToolMenu" Tag="Ellipse" />
+                    <Separator />
+                    <MenuItem Header="_Marks List" Click="OnShowMarks" />
+                </MenuItem>
+                <MenuItem Header="_Pages">
+                    <MenuItem Header="Rotate _Left" Click="OnRotateLeft" />
+                    <MenuItem Header="Rotate _Right" Click="OnRotateRight" />
+                    <MenuItem Header="_Delete Pages" Click="OnDeletePages" />
+                    <Separator />
+                    <MenuItem Header="Move _Up" Click="OnMoveUp" />
+                    <MenuItem Header="Move _Down" Click="OnMoveDown" />
+                    <Separator />
+                    <MenuItem Header="_Extract Pages..." Click="OnExtractPages" />
+                    <MenuItem Header="Insert _Blank Page" Click="OnInsertBlank" />
+                    <MenuItem Header="Insert _From File..." Click="OnInsertFromFile" />
+                    <MenuItem Header="_Merge Files..." Click="OnMerge" />
+                    <MenuItem Header="_Split Document..." Click="OnSplit" />
+                    <MenuItem Header="_Crop Pages..." Click="OnCrop" />
+                </MenuItem>
+                <MenuItem Header="For_ms">
+                    <MenuItem Header="_Fill In Form..." Click="OnFillForm" />
+                    <Separator />
+                    <MenuItem Header="Add _Text Field" Click="OnToolMenu" Tag="TextField" />
+                    <MenuItem Header="Add _Check Box" Click="OnToolMenu" Tag="CheckField" />
+                </MenuItem>
+                <MenuItem Header="Pr_otect">
+                    <MenuItem Header="Set _Password..." Click="OnSetPassword" />
+                    <MenuItem Header="_Remove Password" Click="OnRemovePassword" />
+                    <Separator />
+                    <MenuItem Header="_Mark for Redaction" Click="OnToolMenu" Tag="Redact" />
+                    <MenuItem Header="_Find and Redact..." Click="OnRedactPatterns" />
+                    <MenuItem Header="_Apply Redactions" Click="OnApplyRedactions" />
+                    <MenuItem Header="_Clear Redaction Boxes" Click="OnClearRedactions" />
+                    <Separator />
+                    <MenuItem Header="Remove _Hidden Data" Click="OnSanitize" />
+                    <Separator />
+                    <MenuItem Header="_Sign Document..." Click="OnSign" />
+                    <MenuItem Header="C_heck Signatures" Click="OnCheckSignatures" />
+                </MenuItem>
+                <MenuItem Header="_Review">
+                    <MenuItem Header="_Compare With Another File..." Click="OnCompare" />
+                    <MenuItem Header="Document _Information..." Click="OnEditInfo" />
+                    <MenuItem Header="_Reduce File Size" Click="OnCompress" />
+                </MenuItem>
+                <MenuItem Header="C_onvert">
+                    <MenuItem Header="Export Pages as _Images..." Click="OnExportImages" />
+                    <MenuItem Header="Export _Text..." Click="OnExportText" />
+                    <MenuItem Header="_Pictures to PDF..." Click="OnImagesToPdf" />
+                </MenuItem>
+                <MenuItem Header="_Help">
+                    <MenuItem Header="_Check for Updates..." Click="OnCheckUpdates" />
+                    <MenuItem Header="_About Pagjoro" Click="OnAbout" />
+                    <Separator />
+                    <MenuItem Header="Report a _Problem" Click="OnReportProblem" />
+                    <MenuItem Header="Request a _Feature" Click="OnRequestFeature" />
+                    <MenuItem Header="_Support the Project" Click="OnSupport" />
+                </MenuItem>
+            </Menu>
+
+            <ToolBarTray IsLocked="True">
+                <ToolBar Band="0" BandIndex="0">
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Open}" Click="OnOpen" ToolTip="Open a PDF (Ctrl+O)" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Save}" Click="OnSave" ToolTip="Save (Ctrl+S)" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Print}" Click="OnPrint" ToolTip="Print (Ctrl+P)" />
+                    <Separator />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Undo}" Click="OnUndo" ToolTip="Undo (Ctrl+Z)" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Redo}" Click="OnRedo" ToolTip="Redo (Ctrl+Y)" />
+                    <Separator />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon ZoomOut}" Click="OnZoomOut" ToolTip="Zoom out" />
+                    <ComboBox x:Name="ZoomBox" Width="86" IsEditable="True" Margin="2,0" ToolTip="Zoom" SelectionChanged="OnZoomPicked" KeyDown="OnZoomKey" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon ZoomIn}" Click="OnZoomIn" ToolTip="Zoom in" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon FitWidth}" Click="OnFitWidth" ToolTip="Fit the page to the window width" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon FitPage}" Click="OnFitPage" ToolTip="Fit the whole page in the window" />
+                    <Separator />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Prev}" Click="OnPrevPage" ToolTip="Previous page" />
+                    <TextBox x:Name="PageBox" Width="46" TextAlignment="Center" Margin="2,0" ToolTip="Page number (press Enter to go)" KeyDown="OnPageBoxKey" />
+                    <TextBlock x:Name="PageOf" Text="/ 0" VerticalAlignment="Center" Margin="2,0,6,0" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Next}" Click="OnNextPage" ToolTip="Next page" />
+                    <Separator />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Find}" Click="OnFocusSearch" ToolTip="Search the document (Ctrl+F)" />
+                </ToolBar>
+                <ToolBar Band="1" BandIndex="0">
+                    <ToggleButton x:Name="ToolSelect" Style="{StaticResource TbToggle}" Content="{local:Icon Select}" Click="OnTool" Tag="Select" IsChecked="True" ToolTip="Select and copy text" />
+                    <Separator />
+                    <ToggleButton x:Name="ToolHighlight" Style="{StaticResource TbToggle}" Content="{local:Icon Highlight}" Click="OnTool" Tag="Highlight" ToolTip="Highlight: drag over text" />
+                    <ToggleButton x:Name="ToolUnderline" Style="{StaticResource TbToggle}" Content="{local:Icon Underline}" Click="OnTool" Tag="Underline" ToolTip="Underline: drag over text" />
+                    <ToggleButton x:Name="ToolStrike" Style="{StaticResource TbToggle}" Content="{local:Icon Strike}" Click="OnTool" Tag="Strikeout" ToolTip="Strike through: drag over text" />
+                    <ToggleButton x:Name="ToolNote" Style="{StaticResource TbToggle}" Content="{local:Icon Note}" Click="OnTool" Tag="Note" ToolTip="Note: click where the note should go" />
+                    <ToggleButton x:Name="ToolDraw" Style="{StaticResource TbToggle}" Content="{local:Icon Draw}" Click="OnTool" Tag="Draw" ToolTip="Draw freehand" />
+                    <ToggleButton x:Name="ToolRect" Style="{StaticResource TbToggle}" Content="{local:Icon Box}" Click="OnTool" Tag="Rectangle" ToolTip="Draw a rectangle" />
+                    <ToggleButton x:Name="ToolOval" Style="{StaticResource TbToggle}" Content="{local:Icon Oval}" Click="OnTool" Tag="Ellipse" ToolTip="Draw an oval" />
+                    <TextBlock Text="Colour" VerticalAlignment="Center" Margin="10,0,4,0" />
+                    <ComboBox x:Name="ColorBox" Width="88" SelectionChanged="OnColor" SelectedIndex="0" ToolTip="Colour for marks">
                         <ComboBoxItem Content="Yellow" Tag="Yellow" />
                         <ComboBoxItem Content="Green" Tag="Green" />
                         <ComboBoxItem Content="Blue" Tag="Blue" />
                         <ComboBoxItem Content="Red" Tag="Red" />
                     </ComboBox>
-                    <Button Style="{StaticResource Cmd}" Content="Mark Selection" Click="OnMarkSelection" ToolTip="Highlight the selected text" />
-                    <Button Style="{StaticResource Cmd}" Content="Marks List" Click="OnShowMarks" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="Pages">
-                <WrapPanel Margin="0,8,0,0">
-                    <Button Style="{StaticResource Cmd}" Content="Rotate Left" Click="OnRotateLeft" />
-                    <Button Style="{StaticResource Cmd}" Content="Rotate Right" Click="OnRotateRight" />
-                    <Button Style="{StaticResource Cmd}" Content="Delete Pages" Click="OnDeletePages" />
-                    <Button Style="{StaticResource Cmd}" Content="Move Up" Click="OnMoveUp" />
-                    <Button Style="{StaticResource Cmd}" Content="Move Down" Click="OnMoveDown" />
-                    <Button Style="{StaticResource Cmd}" Content="Extract Pages..." Click="OnExtractPages" />
-                    <Button Style="{StaticResource Cmd}" Content="Insert Blank Page" Click="OnInsertBlank" />
-                    <Button Style="{StaticResource Cmd}" Content="Insert From File..." Click="OnInsertFromFile" />
-                    <Button Style="{StaticResource Cmd}" Content="Merge Files..." Click="OnMerge" />
-                    <Button Style="{StaticResource Cmd}" Content="Split..." Click="OnSplit" />
-                    <Button Style="{StaticResource Cmd}" Content="Crop Pages..." Click="OnCrop" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="Edit">
-                <WrapPanel Margin="0,8,0,0">
-                    <ToggleButton x:Name="ToolText" Style="{StaticResource ToolToggle}" Content="Add Text" Click="OnTool" Tag="Text" ToolTip="Click on the page where the text should go" />
-                    <ToggleButton x:Name="ToolImage" Style="{StaticResource ToolToggle}" Content="Add Picture" Click="OnTool" Tag="Image" ToolTip="Drag a box, then choose the picture" />
-                    <Button Style="{StaticResource Cmd}" Content="Watermark..." Click="OnWatermark" />
-                    <Button Style="{StaticResource Cmd}" Content="Header and Footer..." Click="OnHeaderFooter" />
-                    <Button Style="{StaticResource Cmd}" Content="Page Numbers..." Click="OnPageNumbers" />
-                    <Button Style="{StaticResource Cmd}" Content="Bates Numbers..." Click="OnBates" />
-                    <Button Style="{StaticResource Cmd}" Content="Flatten Marks" Click="OnFlatten" ToolTip="Make comments and form fields part of the page" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="Protect">
-                <WrapPanel Margin="0,8,0,0">
-                    <Button Style="{StaticResource Cmd}" Content="Set Password..." Click="OnSetPassword" />
-                    <Button Style="{StaticResource Cmd}" Content="Remove Password" Click="OnRemovePassword" />
-                    <ToggleButton x:Name="ToolRedact" Style="{StaticResource ToolToggle}" Content="Mark for Redaction" Click="OnTool" Tag="Redact" ToolTip="Drag a box over what must be removed" />
-                    <Button Style="{StaticResource Cmd}" Content="Find and Redact..." Click="OnRedactPatterns" ToolTip="Find numbers, emails and other private details" />
-                    <Button Style="{StaticResource Cmd}" Content="Apply Redactions" Click="OnApplyRedactions" ToolTip="Permanently remove everything under the marked boxes" />
-                    <Button Style="{StaticResource Cmd}" Content="Clear Redaction Boxes" Click="OnClearRedactions" />
-                    <Button Style="{StaticResource Cmd}" Content="Remove Hidden Data" Click="OnSanitize" ToolTip="Take out properties, metadata, scripts and embedded files" />
-                    <Button Style="{StaticResource Cmd}" Content="Sign Document..." Click="OnSign" ToolTip="Sign with a certificate on this computer" />
-                    <Button Style="{StaticResource Cmd}" Content="Check Signatures" Click="OnCheckSignatures" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="Review">
-                <WrapPanel Margin="0,8,0,0">
-                    <Button Style="{StaticResource Cmd}" Content="Compare With Another File..." Click="OnCompare" />
-                    <Button Style="{StaticResource Cmd}" Content="Document Info..." Click="OnEditInfo" />
-                    <Button Style="{StaticResource Cmd}" Content="Reduce File Size" Click="OnCompress" />
-                </WrapPanel>
-            </TabItem>
-            <TabItem Header="Convert">
-                <WrapPanel Margin="0,8,0,0">
-                    <Button Style="{StaticResource Cmd}" Content="Export Pages as Images..." Click="OnExportImages" />
-                    <Button Style="{StaticResource Cmd}" Content="Export Text..." Click="OnExportText" />
-                    <Button Style="{StaticResource Cmd}" Content="Pictures to PDF..." Click="OnImagesToPdf" />
-                </WrapPanel>
-            </TabItem>        </TabControl>
+                    <Separator />
+                    <ToggleButton x:Name="ToolText" Style="{StaticResource TbToggle}" Content="{local:Icon Text}" Click="OnTool" Tag="Text" ToolTip="Add text: click on the page where it should go" />
+                    <ToggleButton x:Name="ToolImage" Style="{StaticResource TbToggle}" Content="{local:Icon Picture}" Click="OnTool" Tag="Image" ToolTip="Add a picture: drag a box, then choose the picture" />
+                    <Separator />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Form}" Click="OnFillForm" ToolTip="Fill in the form fields of this document" />
+                    <ToggleButton x:Name="ToolField" Style="{StaticResource TbToggle}" Content="{local:Icon TextField}" Click="OnTool" Tag="TextField" ToolTip="Add a text field: drag a box" />
+                    <ToggleButton x:Name="ToolCheck" Style="{StaticResource TbToggle}" Content="{local:Icon CheckBox}" Click="OnTool" Tag="CheckField" ToolTip="Add a check box: drag a small box" />
+                    <Separator />
+                    <ToggleButton x:Name="ToolRedact" Style="{StaticResource TbToggle}" Content="{local:Icon Redact}" Click="OnTool" Tag="Redact" ToolTip="Redact: drag a box over what must be removed" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Apply}" Click="OnApplyRedactions" ToolTip="Apply redactions: permanently remove everything under the red boxes" />
+                    <Separator />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Rotate}" Click="OnRotateRight" ToolTip="Rotate the selected pages clockwise" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Delete}" Click="OnDeletePages" ToolTip="Delete the selected pages" />
+                    <Button Style="{StaticResource Tb}" Content="{local:Icon Sign}" Click="OnSign" ToolTip="Sign with a certificate on this computer" />
+                </ToolBar>
+            </ToolBarTray>
+        </StackPanel>
 
         <!-- document area -->
         <Grid Grid.Row="1">
@@ -158,7 +255,7 @@
             </Grid.ColumnDefinitions>
 
             <TabControl x:Name="SideTabs" Grid.Column="0">
-                <TabItem Header="Pages">
+                <TabItem><TabItem.Header><StackPanel Orientation="Horizontal"><ContentControl Content="{local:Icon Pages}" Margin="0,0,6,0" /><TextBlock Text="Pages" /></StackPanel></TabItem.Header>
                     <ListBox x:Name="Thumbs" SelectionMode="Extended" SelectionChanged="OnThumbSelected" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              AllowDrop="True" PreviewMouseMove="OnThumbDragStart" Drop="OnThumbDrop" HorizontalContentAlignment="Center">
                         <ListBox.ItemTemplate>
@@ -173,7 +270,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </TabItem>
-                <TabItem Header="Outline">
+                <TabItem><TabItem.Header><StackPanel Orientation="Horizontal"><ContentControl Content="{local:Icon Outline}" Margin="0,0,6,0" /><TextBlock Text="Outline" /></StackPanel></TabItem.Header>
                     <ListBox x:Name="Outline" SelectionChanged="OnOutlineSelected">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -182,7 +279,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </TabItem>
-                <TabItem Header="Marks">
+                <TabItem><TabItem.Header><StackPanel Orientation="Horizontal"><ContentControl Content="{local:Icon Marks}" Margin="0,0,6,0" /><TextBlock Text="Marks" /></StackPanel></TabItem.Header>
                     <DockPanel>
                         <Button DockPanel.Dock="Bottom" Content="Remove Selected Mark" Margin="6" Click="OnRemoveMark" />
                         <ListBox x:Name="MarksList" SelectionChanged="OnMarkSelected">
@@ -222,7 +319,7 @@
                 </Border>
 
                 <ScrollViewer x:Name="Scroller" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#FF7A7F85">
-                    <local:DocumentView x:Name="View" xmlns:local="clr-namespace:Pagjoro.App" />
+                    <local:DocumentView x:Name="View" />
                 </ScrollViewer>
 
                 <!-- shown until a file is open -->

@@ -78,6 +78,7 @@ public partial class MainWindow : Window
         View.NoteRequested += OnNoteRequested;
         View.StatusMessage += s => MessageStatus.Text = s;
         WireTools();
+        InitMenusAndToolbar();
         ShowRecent();
         Loaded += (_, _) =>
         {
@@ -107,8 +108,9 @@ public partial class MainWindow : Window
 
     void OnViewChanged()
     {
-        if (doc is null) { PageStatus.Text = ""; ZoomStatus.Text = ""; return; }
+        if (doc is null) { PageStatus.Text = ""; ZoomStatus.Text = ""; SyncToolbar(); return; }
         PageStatus.Text = $"Page {Math.Max(0, View.CurrentPage) + 1} of {View.PageCount}";
+        SyncToolbar();
         ZoomStatus.Text = $"Zoom {Math.Round(View.Zoom * 100)}%";
     }
 
@@ -221,6 +223,7 @@ public partial class MainWindow : Window
         var items = recent.Items.Select(p => new RecentItem(p, Path.GetFileName(p), "  " + Path.GetDirectoryName(p))).ToList();
         RecentList.ItemsSource = items;
         RecentTitle.Visibility = items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        RebuildRecentMenu();
     }
 
     /// <summary>Opens a file, asking for the password when it needs one. Returns null if the person gave up.</summary>
@@ -376,9 +379,13 @@ public partial class MainWindow : Window
 
     void OnTool(object sender, RoutedEventArgs e)
     {
-        var button = (ToggleButton)sender;
-        foreach (var t in new[] { ToolSelect, ToolHighlight, ToolUnderline, ToolStrike, ToolNote, ToolDraw, ToolRect, ToolOval, ToolRedact, ToolText, ToolImage }) t.IsChecked = ReferenceEquals(t, button);
-        View.Tool = Enum.Parse<ViewTool>((string)button.Tag);
+        if (sender is FrameworkElement { Tag: string tag }) SelectTool(tag);
+    }
+
+    void SelectTool(string tag)
+    {
+        foreach (var t in new[] { ToolSelect, ToolHighlight, ToolUnderline, ToolStrike, ToolNote, ToolDraw, ToolRect, ToolOval, ToolRedact, ToolText, ToolImage, ToolField, ToolCheck }) t.IsChecked = (string)t.Tag == tag;
+        View.Tool = Enum.Parse<ViewTool>(tag);
         MessageStatus.Text = View.Tool switch
         {
             ViewTool.Select => "Drag across text to select it. Ctrl+C copies it.",
@@ -389,6 +396,8 @@ public partial class MainWindow : Window
             ViewTool.Redact => "Drag a box over what must be removed, then press Apply Redactions.",
             ViewTool.Text => "Click on the page where the text should go.",
             ViewTool.Image => "Drag a box where the picture should go.",
+            ViewTool.TextField => "Drag a box where the text field should go.",
+            ViewTool.CheckField => "Drag a small box where the check box should go.",
             _ => "",
         };
     }

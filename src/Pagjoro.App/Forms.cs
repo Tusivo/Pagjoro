@@ -234,6 +234,52 @@ public static class Forms
         return w.ShowDialog() == true ? boxes.Where(b => b.Item1.IsChecked == true).Select(b => b.Item2).ToList() : null;
     }
 
+    public sealed record FormAnswer(Dictionary<string, string> Values, Dictionary<string, bool> Checks);
+
+    /// <summary>One row per fillable field: a text box, a tick box or a list of choices.</summary>
+    public static FormAnswer? FillForm(Window? owner, IReadOnlyList<FormField> fields)
+    {
+        var w = new Window
+        {
+            Title = "Fill In Form", Width = 560, Height = Math.Min(720, 220 + fields.Count * 62), MinHeight = 260, Owner = owner,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false,
+        };
+        var dock = new DockPanel { Margin = new Thickness(20) };
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
+        DockPanel.SetDock(buttons, Dock.Bottom);
+        var ok = new Button { Content = "Fill In", IsDefault = true, Padding = new Thickness(18, 6, 18, 6), MinWidth = 96 };
+        var cancel = new Button { Content = "Cancel", IsCancel = true, Padding = new Thickness(18, 6, 18, 6), MinWidth = 88, Margin = new Thickness(8, 0, 0, 0) };
+        buttons.Children.Add(ok); buttons.Children.Add(cancel); dock.Children.Add(buttons);
+        var panel = new StackPanel();
+        var texts = new List<(string Name, Func<string> Get)>();
+        var checks = new List<(string Name, CheckBox Box)>();
+        foreach (var f in fields)
+        {
+            if (f.Kind == FormFieldKind.CheckBox)
+            {
+                var cb = new CheckBox { Content = f.Name, IsChecked = f.Checked, Margin = new Thickness(0, 8, 0, 0) };
+                checks.Add((f.Name, cb)); panel.Children.Add(cb);
+                continue;
+            }
+            panel.Children.Add(new TextBlock { Text = f.Name, Margin = new Thickness(0, 8, 0, 3) });
+            if (f.Options.Count > 0)
+            {
+                var combo = new ComboBox { ItemsSource = f.Options, SelectedItem = f.Options.Contains(f.Value) ? f.Value : null };
+                texts.Add((f.Name, () => combo.SelectedItem as string ?? f.Value)); panel.Children.Add(combo);
+            }
+            else
+            {
+                var tb = new TextBox { Text = f.Value };
+                texts.Add((f.Name, () => tb.Text)); panel.Children.Add(tb);
+            }
+        }
+        dock.Children.Add(new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+        w.Content = dock;
+        ok.Click += (_, _) => w.DialogResult = true;
+        if (w.ShowDialog() != true) return null;
+        return new FormAnswer(texts.ToDictionary(t => t.Name, t => t.Get()), checks.ToDictionary(c => c.Name, c => c.Box.IsChecked == true));
+    }
+
     public sealed record SignChoice(X509Certificate2 Certificate, string Reason, string Location, string Contact, bool Visible);
 
     public static SignChoice? Sign(Window? owner, IReadOnlyList<X509Certificate2> certificates)
