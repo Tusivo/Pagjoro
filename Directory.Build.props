@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <!-- One version for the whole solution. Bump it here (and the README status line) for each release. -->
+    <Version>0.1.0-alpha.1</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.1</FileVersion>
+    <InformationalVersion>0.1.0-alpha.1</InformationalVersion>
+
+    <Product>Pagjoro</Product>
+    <Authors>Tusivo</Authors>
+    <Company>Tusivo</Company>
+    <Copyright>Copyright (C) Tusivo. Licensed under the GNU Affero General Public License 3.0 or later.</Copyright>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Tusivo/Pagjoro</RepositoryUrl>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

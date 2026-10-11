@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Pagjoro.Core</RootNamespace>
+    <AssemblyName>Pagjoro.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- the public key updates must be signed with (made by: node scripts/release-sign.js keygen) -->
+    <EmbeddedResource Include="release-key.txt" LogicalName="release-key.txt" Condition="Exists('release-key.txt')" />
+  </ItemGroup>
+
+</Project>

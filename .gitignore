@@ -1,0 +1,44 @@
+# Build output and programs: the finished Pagjoro.exe is attached to GitHub Releases by hand, never committed
+bin/
+obj/
+dist/
+publish/
+*.exe
+*.dll
+*.pdb
+*.sig
+*.pem
+*.exe.sha256
+
+# Visual Studio and other tools
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+TestResults/
+*.trx
+coverage*.xml
+*.log
+*.tmp
+*.cache
+~$*
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Local settings and test material that must never be shared
+.pagjoro-signing/
+appsettings.Local.json
+samples-private/
+*.private.pdf
+
+# Windows
+Thumbs.db
+desktop.ini

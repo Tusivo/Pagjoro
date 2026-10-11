@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Pagjoro.App</RootNamespace>
+    <AssemblyName>Pagjoro</AssemblyName>
+    <ApplicationIcon>Assets\Pagjoro.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- the Windows 11 look (it follows the person's light or dark setting) is still marked experimental by WPF -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pagjoro.Core\Pagjoro.Core.csproj" />
+    <!-- the README is shown on the About page -->
+    <EmbeddedResource Include="..\..\README.md" LogicalName="README.md" />
+    <Resource Include="Assets\Pagjoro.ico" />
+    <Resource Include="Assets\Pagjoro.png" />
+  </ItemGroup>
+
+</Project>
