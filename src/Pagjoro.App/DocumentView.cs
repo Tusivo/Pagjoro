@@ -10,7 +10,7 @@ using Pagjoro.Core.Pdf;
 
 namespace Pagjoro.App;
 
-public enum ViewTool { Select, Highlight, Underline, Strikeout, Note, Draw, Rectangle, Ellipse, Redact, Text, Image, SignArea, TextField, CheckField }
+public enum ViewTool { Select, Highlight, Underline, Strikeout, Note, Draw, Rectangle, Ellipse, Redact, Text, Image, SignArea, TextField, CheckField, EditContent, Stamp, LinkArea }
 
 /// <summary>
 /// Shows a document as a vertical strip of pages and handles the mouse for selecting text, marking it and drawing. It lives inside a
@@ -20,7 +20,7 @@ public sealed class DocumentView : FrameworkElement
 {
     const double PageGap = 14, PageMargin = 18, Points = 96.0 / 72.0, MapScale = 4;
 
-    sealed record Slot(double Top, double WidthPts, double HeightPts);
+    sealed record Slot(double Top, double WidthPts, double HeightPts, double PairWidthPts = 0, double OffsetPts = 0);
     sealed record Cached(BitmapSource Image, int PixelWidth);
 
     PdfFile? doc;
@@ -46,6 +46,21 @@ public sealed class DocumentView : FrameworkElement
     readonly Dictionary<int, List<PageRect>> redactions = [];
 
     public ViewTool Tool { get; set; } = ViewTool.Select;
+
+    /// <summary>Show pages two at a time, side by side, like an open book.</summary>
+    public bool Facing { get; private set; }
+
+    public void SetFacing(bool on)
+    {
+        if (Facing == on) return;
+        Facing = on;
+        var anchor = Math.Max(0, CurrentPage);
+        version++; cache.Clear(); lock (pending) pending.Clear();
+        BuildLayout();
+        ScrollToPage(anchor);
+        InvalidateVisual();
+        ViewChanged?.Invoke();
+    }
     public PdfColor MarkColor { get; set; } = PdfColor.Yellow;
     public double Zoom => zoom;
     public int PageCount => doc?.PageCount ?? 0;
@@ -60,6 +75,35 @@ public sealed class DocumentView : FrameworkElement
     public event Action<int, double, double>? TextRequested;
     public event Action<ViewTool, int, PageRect>? AreaChosen;   // a box was dragged for adding a picture or placing a signature
     public event Action<string>? StatusMessage;
+    public event Action<int, double, double>? StampRequested;
+    public event Action<int, int>? MarkClicked;                         // page, index of a mark that was clicked
+    public event Action<int, int, double, double>? MarkMoved;           // page, index, dx, dy (page points)
+    public event Action<int, double, double>? ContentClicked;           // page, x, y: edit what is under this point
+    public event Action<int, double, double, double, double>? ContentDragged;   // page, x, y, dx, dy
+
+    (int Page, int Index, PageRect Rect, AnnotationKind Kind)? dragMark;
+    (int Page, PageRect Rect)? shownMark;
+
+    /// <summary>Outlines a mark so it can be seen which one is chosen (null clears it).</summary>
+    public void ShowMark(int page, PageRect? rect)
+    {
+        shownMark = rect is { } r ? (page, r) : null;
+        InvalidateVisual();
+    }
+
+    static bool IsMovableMark(AnnotationKind k) => k is AnnotationKind.Note or AnnotationKind.Square or AnnotationKind.Circle or AnnotationKind.FreeText or AnnotationKind.Stamp;
+
+    AnnotationInfo? MarkAt(int page, double x, double y)
+    {
+        AnnotationInfo? best = null;
+        foreach (var a in doc!.GetAnnotations(page))
+        {
+            if (a.Kind is AnnotationKind.Link or AnnotationKind.Widget or AnnotationKind.Popup) continue;
+            var r = a.Rect;
+            if (x >= r.Left - 2 && x <= r.Right + 2 && y >= r.Bottom - 2 && y <= r.Top + 2) best = a;   // the one drawn last is on top
+        }
+        return best;
+    }
 
     public DocumentView()
     {
@@ -116,10 +160,22 @@ public sealed class DocumentView : FrameworkElement
         if (doc is null) { Width = 0; Height = 0; return; }
         double top = PageMargin;
         var count = doc.PageCount;
+        const double pairGapPts = 10;
         for (var i = 0; i < count; i++)
         {
             var (w, h) = doc.GetPageSize(i);
-            slots.Add(new Slot(top, w, h));
+            if (Facing && i + 1 < count)
+            {
+                // two pages side by side, tops aligned, the pair centred as one
+                var (w2, h2) = doc.GetPageSize(i + 1);
+                var pairWidth = w + pairGapPts + w2;
+                slots.Add(new Slot(top, w, h, pairWidth, 0));
+                slots.Add(new Slot(top, w2, h2, pairWidth, w + pairGapPts));
+                top += Math.Max(h, h2) * Points * zoom + PageGap;
+                i++;
+                continue;
+            }
+            slots.Add(new Slot(top, w, h, w, 0));
             top += h * Points * zoom + PageGap;
         }
         Height = top - PageGap + PageMargin;
@@ -129,12 +185,12 @@ public sealed class DocumentView : FrameworkElement
     void UpdateSize()
     {
         if (slots.Count == 0) { Width = Math.Max(0, scroller?.ViewportWidth ?? 0); return; }
-        var widest = slots.Max(s => s.WidthPts) * Points * zoom + 2 * PageMargin;
+        var widest = slots.Max(s => s.PairWidthPts) * Points * zoom + 2 * PageMargin;
         Width = Math.Max(widest, scroller?.ViewportWidth ?? 0);
         InvalidateVisual();
     }
 
-    double PageLeft(Slot s) => (Width - s.WidthPts * Points * zoom) / 2;
+    double PageLeft(Slot s) => (Width - s.PairWidthPts * Points * zoom) / 2 + s.OffsetPts * Points * zoom;
     double PageWidth(Slot s) => s.WidthPts * Points * zoom;
     double PageHeight(Slot s) => s.HeightPts * Points * zoom;
 
@@ -159,7 +215,7 @@ public sealed class DocumentView : FrameworkElement
     public void FitWidth()
     {
         if (slots.Count == 0 || scroller is null) return;
-        var widest = slots.Max(s => s.WidthPts) * Points;
+        var widest = slots.Max(s => s.PairWidthPts) * Points;
         SetZoom((scroller.ViewportWidth - 2 * PageMargin - 4) / widest);
     }
 
@@ -167,7 +223,7 @@ public sealed class DocumentView : FrameworkElement
     {
         if (slots.Count == 0 || scroller is null) return;
         var page = Math.Max(0, CurrentPage); var s = slots[Math.Min(page, slots.Count - 1)];
-        SetZoom(Math.Min((scroller.ViewportWidth - 2 * PageMargin - 4) / (s.WidthPts * Points), (scroller.ViewportHeight - 2 * PageMargin) / (s.HeightPts * Points)));
+        SetZoom(Math.Min((scroller.ViewportWidth - 2 * PageMargin - 4) / (s.PairWidthPts * Points), (scroller.ViewportHeight - 2 * PageMargin) / (s.HeightPts * Points)));
     }
 
     public int CurrentPage
@@ -312,12 +368,17 @@ public sealed class DocumentView : FrameworkElement
             var brush = new SolidColorBrush(Color.FromArgb(90, 30, 120, 255));
             foreach (var d in doc.RectsToDevice(page, vw, vh, selRects)) dc.DrawRectangle(brush, null, Map(d));
         }
+        if (shownMark is { } sm && sm.Page == page)
+        {
+            var pen = new Pen(new SolidColorBrush(Color.FromRgb(0, 120, 215)), 2) { DashStyle = DashStyles.Dot };
+            foreach (var d in doc.RectsToDevice(page, vw, vh, [new PageRect(sm.Rect.Left - 3, sm.Rect.Bottom - 3, sm.Rect.Right + 3, sm.Rect.Top + 3)])) dc.DrawRectangle(null, pen, Map(d));
+        }
         if (redactions.TryGetValue(page, out var boxes))
         {
             var fill = new SolidColorBrush(Color.FromArgb(110, 220, 20, 20)); var pen = new Pen(Brushes.Red, 1.5);
             foreach (var d in doc.RectsToDevice(page, vw, vh, boxes)) dc.DrawRectangle(fill, pen, Map(d));
         }
-        if (dragging && dragPage == page && Tool is ViewTool.Rectangle or ViewTool.Ellipse or ViewTool.Redact or ViewTool.Image or ViewTool.SignArea or ViewTool.TextField or ViewTool.CheckField)
+        if (dragging && dragPage == page && Tool is ViewTool.Rectangle or ViewTool.Ellipse or ViewTool.Redact or ViewTool.Image or ViewTool.SignArea or ViewTool.TextField or ViewTool.CheckField or ViewTool.LinkArea)
         {
             var r = new Rect(dragFrom, dragTo);
             var pen = new Pen(Tool == ViewTool.Redact ? Brushes.Red : new SolidColorBrush(Color.FromRgb(220, 38, 38)), 1.5) { DashStyle = DashStyles.Dash };
@@ -371,7 +432,7 @@ public sealed class DocumentView : FrameworkElement
         {
             var s = slots[i];
             var r = new Rect(PageLeft(s), s.Top, PageWidth(s), PageHeight(s));
-            if (p.Y >= r.Top - PageGap / 2 && p.Y <= r.Bottom + PageGap / 2) return (i, r);
+            if (p.Y >= r.Top - PageGap / 2 && p.Y <= r.Bottom + PageGap / 2 && (!Facing || (p.X >= r.Left - PageGap / 2 && p.X <= r.Right + PageGap / 2))) return (i, r);
         }
         return null;
     }
@@ -396,7 +457,9 @@ public sealed class DocumentView : FrameworkElement
             case ViewTool.Select or ViewTool.Highlight or ViewTool.Underline or ViewTool.Strikeout:
                 ClearSelection();
                 var (x, y) = ToPagePoint(dragPage, hit.Value.PageRect, p);
-                dragAnchorChar = doc.CharIndexAt(dragPage, x, y, 6);
+                dragMark = null;
+                if (Tool == ViewTool.Select && MarkAt(dragPage, x, y) is { } mk) { dragMark = (dragPage, mk.Index, mk.Rect, mk.Kind); dragAnchorChar = -1; }
+                else dragAnchorChar = doc.CharIndexAt(dragPage, x, y, 6);
                 break;
             case ViewTool.Draw: inkPoints = [p]; break;
         }
@@ -443,6 +506,21 @@ public sealed class DocumentView : FrameworkElement
         {
             switch (Tool)
             {
+                case ViewTool.Select when moved && dragMark is { } dm && IsMovableMark(dm.Kind):
+                    var from = ToPagePoint(page, rect, dragFrom); var to = ToPagePoint(page, rect, dragTo);
+                    MarkMoved?.Invoke(dm.Page, dm.Index, to.X - from.X, to.Y - from.Y);
+                    break;
+                case ViewTool.Select when !moved && dragMark is { } clicked:
+                    MarkClicked?.Invoke(clicked.Page, clicked.Index);
+                    break;
+                case ViewTool.EditContent when !moved:
+                    var cp = ToPagePoint(page, rect, dragTo);
+                    ContentClicked?.Invoke(page, cp.X, cp.Y);
+                    break;
+                case ViewTool.EditContent when moved:
+                    var cf = ToPagePoint(page, rect, dragFrom); var ct = ToPagePoint(page, rect, dragTo);
+                    ContentDragged?.Invoke(page, cf.X, cf.Y, ct.X - cf.X, ct.Y - cf.Y);
+                    break;
                 case ViewTool.Select when !moved:
                     var (x, y) = ToPagePoint(page, rect, dragTo);
                     var link = doc.GetLinkAt(page, x, y);
@@ -461,11 +539,15 @@ public sealed class DocumentView : FrameworkElement
                     var np = ToPagePoint(page, rect, dragTo);
                     NoteRequested?.Invoke(page, np.X, np.Y);
                     break;
+                case ViewTool.Stamp when !moved:
+                    var sp = ToPagePoint(page, rect, dragTo);
+                    StampRequested?.Invoke(page, sp.X, sp.Y);
+                    break;
                 case ViewTool.Text when !moved:
                     var tp = ToPagePoint(page, rect, dragTo);
                     TextRequested?.Invoke(page, tp.X, tp.Y);
                     break;
-                case ViewTool.Image or ViewTool.SignArea or ViewTool.TextField or ViewTool.CheckField when moved:
+                case ViewTool.Image or ViewTool.SignArea or ViewTool.TextField or ViewTool.CheckField or ViewTool.LinkArea when moved:
                     var chosen = doc.DeviceRectToPage(page, vw, vh, (Math.Min(dragFrom.X, dragTo.X) - rect.Left) * MapScale, (Math.Min(dragFrom.Y, dragTo.Y) - rect.Top) * MapScale,
                         (Math.Max(dragFrom.X, dragTo.X) - rect.Left) * MapScale, (Math.Max(dragFrom.Y, dragTo.Y) - rect.Top) * MapScale);
                     AreaChosen?.Invoke(Tool, page, chosen);

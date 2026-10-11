@@ -61,6 +61,7 @@ public sealed class IconExtension : MarkupExtension
         ["Box"]       = (Group.Orange, "M4 6 H20 V18 H4 Z", null),
         ["Oval"]      = (Group.Orange, "M12 6 A9 6 0 1 0 12 18 A9 6 0 1 0 12 6 Z", null),
 
+        ["EditContent"] = (Group.Purple, "M4 6 H20 V18 H4 Z M8 15 L12 8 L16 15 M9.5 12.5 H14.5", null),
         ["Text"]      = (Group.Purple, "M5 7 V4 H19 V7 M12 4 V20 M9 20 H15", null),
         ["Picture"]   = (Group.Purple, "M3 5 H21 V19 H3 Z M3 16 L9 10 L14 15 L17 12 L21 16", "M16 7.2 A1.4 1.4 0 1 0 16 10 A1.4 1.4 0 1 0 16 7.2 Z"),
         ["Form"]      = (Group.Purple, "M4 5 H20 V11 H4 Z M4 15 H11 V19 H4 Z M15 15 L17 17 L21 13", null),

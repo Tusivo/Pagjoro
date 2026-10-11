@@ -123,6 +123,7 @@
                     <Separator />
                     <MenuItem Header="_Print..." InputGestureText="Ctrl+P" Click="OnPrint" />
                     <MenuItem Header="Document _Properties..." Click="OnProperties" />
+                    <MenuItem Header="_Batch Process Files..." Click="OnBatch" />
                     <Separator />
                     <MenuItem Header="_Close File" Click="OnCloseFile" />
                     <MenuItem Header="E_xit" Click="OnExit" />
@@ -134,8 +135,11 @@
                     <MenuItem Header="_Copy Selected Text" InputGestureText="Ctrl+C" Click="OnCopy" />
                     <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="OnFocusSearch" />
                     <Separator />
+                    <MenuItem Header="_Edit Text or Pictures" Click="OnToolMenu" Tag="EditContent" />
                     <MenuItem Header="Add _Text" Click="OnToolMenu" Tag="Text" />
                     <MenuItem Header="Add _Picture" Click="OnToolMenu" Tag="Image" />
+                    <MenuItem x:Name="StampMenu" Header="_Stamp" />
+                    <MenuItem Header="Add a _Link" Click="OnToolMenu" Tag="LinkArea" />
                     <MenuItem Header="_Watermark..." Click="OnWatermark" />
                     <MenuItem Header="_Header and Footer..." Click="OnHeaderFooter" />
                     <MenuItem Header="_Page Numbers..." Click="OnPageNumbers" />
@@ -148,6 +152,7 @@
                     <MenuItem Header="Fit _Width" Click="OnFitWidth" />
                     <MenuItem Header="Fit _Page" Click="OnFitPage" />
                     <MenuItem Header="_Actual Size" Click="OnActualSize" />
+                    <MenuItem x:Name="FacingItem" Header="_Two Pages Side by Side" IsCheckable="True" Click="OnToggleFacing" />
                     <Separator />
                     <MenuItem Header="_Previous Page" Click="OnPrevPage" />
                     <MenuItem Header="_Next Page" Click="OnNextPage" />
@@ -185,6 +190,9 @@
                     <Separator />
                     <MenuItem Header="Add _Text Field" Click="OnToolMenu" Tag="TextField" />
                     <MenuItem Header="Add _Check Box" Click="OnToolMenu" Tag="CheckField" />
+                    <Separator />
+                    <MenuItem Header="_Export Form Data..." Click="OnExportFormData" />
+                    <MenuItem Header="_Import Form Data..." Click="OnImportFormData" />
                 </MenuItem>
                 <MenuItem Header="Pr_otect">
                     <MenuItem Header="Set _Password..." Click="OnSetPassword" />
@@ -201,6 +209,15 @@
                     <MenuItem Header="C_heck Signatures" Click="OnCheckSignatures" />
                 </MenuItem>
                 <MenuItem Header="_Review">
+                    <MenuItem Header="_Recognize Text (OCR)..." Click="OnRecognizeText" />
+                    <MenuItem Header="_Accessibility Check..." Click="OnAccessibilityCheck" />
+                    <MenuItem Header="_Print and Sharing Check..." Click="OnPrintCheck" />
+                    <MenuItem Header="Reading _Options..." Click="OnReadingOptions" />
+                    <Separator />
+                    <MenuItem Header="_Bookmarks..." Click="OnBookmarks" />
+                    <MenuItem Header="Page _Numbering..." Click="OnPageLabels" />
+                    <MenuItem Header="Attach_ments..." Click="OnAttachments" />
+                    <Separator />
                     <MenuItem Header="_Compare With Another File..." Click="OnCompare" />
                     <MenuItem Header="Document _Information..." Click="OnEditInfo" />
                     <MenuItem Header="_Reduce File Size" Click="OnCompress" />
@@ -209,6 +226,13 @@
                     <MenuItem Header="Export Pages as _Images..." Click="OnExportImages" />
                     <MenuItem Header="Export _Text..." Click="OnExportText" />
                     <MenuItem Header="_Pictures to PDF..." Click="OnImagesToPdf" />
+                    <MenuItem Header="_Office File to PDF..." Click="OnOfficeToPdf" />
+                    <MenuItem Header="_Scan to PDF..." Click="OnScan" />
+                    <Separator />
+                    <MenuItem Header="Export as _Web Page..." Click="OnExportHtml" />
+                    <MenuItem Header="Export as _Word Document..." Click="OnExportWord" />
+                    <MenuItem Header="Export as _Excel Workbook..." Click="OnExportExcel" />
+                    <MenuItem Header="Export as _CSV..." Click="OnExportCsv" />
                 </MenuItem>
                 <MenuItem Header="_Help">
                     <MenuItem Header="_Check for Updates..." Click="OnCheckUpdates" />
@@ -261,6 +285,7 @@
                         <ComboBoxItem Content="Red" Tag="Red" />
                     </ComboBox>
                     <Separator />
+                    <ToggleButton x:Name="ToolEdit" Style="{StaticResource TbToggle}" Content="{local:Icon EditContent}" Click="OnTool" Tag="EditContent" ToolTip="Edit text or pictures: click one to change it, drag to move it" />
                     <ToggleButton x:Name="ToolText" Style="{StaticResource TbToggle}" Content="{local:Icon Text}" Click="OnTool" Tag="Text" ToolTip="Add text: click on the page where it should go" />
                     <ToggleButton x:Name="ToolImage" Style="{StaticResource TbToggle}" Content="{local:Icon Picture}" Click="OnTool" Tag="Image" ToolTip="Add a picture: drag a box, then choose the picture" />
                     <Separator />
@@ -313,7 +338,11 @@
                 </TabItem>
                 <TabItem><TabItem.Header><StackPanel Orientation="Horizontal"><ContentControl Content="{local:Icon Marks}" Margin="0,0,6,0" /><TextBlock Text="Marks" /></StackPanel></TabItem.Header>
                     <DockPanel>
-                        <Button DockPanel.Dock="Bottom" Content="Remove Selected Mark" Margin="6" Click="OnRemoveMark" />
+                        <StackPanel DockPanel.Dock="Bottom" Margin="6">
+                            <Button Content="Edit Words..." Click="OnEditMark" Margin="0,0,0,4" ToolTip="Change the text of the chosen mark" />
+                            <Button Content="Use Toolbar Colour" Click="OnRecolorMark" Margin="0,0,0,4" ToolTip="Give the chosen mark the colour picked in the toolbar" />
+                            <Button Content="Remove Selected Mark" Click="OnRemoveMark" />
+                        </StackPanel>
                         <ListBox x:Name="MarksList" SelectionChanged="OnMarkSelected">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>

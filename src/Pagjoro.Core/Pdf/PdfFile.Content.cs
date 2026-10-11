@@ -360,63 +360,10 @@ public sealed partial class PdfFile
     // ---- redaction --------------------------------------------------------------------------------------------------
 
     /// <summary>
-    /// Permanently removes what lies under the given areas and draws a solid block there. Every text run, picture and shape that touches
-    /// an area is deleted from the page's content (not merely covered), and marks that touch it are removed. Returns how many page
-    /// objects and marks were deleted.
+    /// Permanently removes what lies under the given areas and draws a solid block there. See <see cref="RedactPage"/> for exactly what is
+    /// removed. Returns how many marks, lines, pictures and objects were changed.
     /// </summary>
-    public int Redact(int pageIndex, IReadOnlyList<PageRect> areas, PdfColor fill)
-    {
-        Check(); ValidatePage(pageIndex);
-        if (areas.Count == 0) return 0;
-        var boxes = areas.Select(a => a.Normalized()).ToList();
-        var removed = 0;
-        lock (PdfEngine.Gate)
-        {
-            var page = fpdfview.FPDF_LoadPage(Doc, pageIndex);
-            try
-            {
-                // marks first (highest index first so the numbering stays valid)
-                for (var i = fpdf_annot.FPDFPageGetAnnotCount(page) - 1; i >= 0; i--)
-                {
-                    var annot = fpdf_annot.FPDFPageGetAnnot(page, i);
-                    if (annot is null) continue;
-                    var rect = new FS_RECTF_(); var hit = false;
-                    try
-                    {
-                        var subtype = fpdf_annot.FPDFAnnotGetSubtype(annot);
-                        if (subtype != (int)AnnotationKind.Link && fpdf_annot.FPDFAnnotGetRect(annot, rect) != 0)
-                            hit = boxes.Any(b => b.Intersects(new PageRect(rect.Left, rect.Bottom, rect.Right, rect.Top)));
-                    }
-                    finally { fpdf_annot.FPDFPageCloseAnnot(annot); }
-                    if (hit && fpdf_annot.FPDFPageRemoveAnnot(page, i) != 0) removed++;
-                }
-                // page content: remove every object that touches an area
-                for (var i = fpdf_edit.FPDFPageCountObjects(page) - 1; i >= 0; i--)
-                {
-                    var obj = fpdf_edit.FPDFPageGetObject(page, i);
-                    if (obj is null) continue;
-                    float l = 0, b = 0, r = 0, t = 0;
-                    if (fpdf_edit.FPDFPageObjGetBounds(obj, ref l, ref b, ref r, ref t) == 0) continue;
-                    var ob = new PageRect(l, b, r, t);
-                    if (!boxes.Any(x => x.Intersects(ob))) continue;
-                    // a page-sized background (a shape covering most of the page) is kept, so only the objects inside are lost
-                    if (fpdf_edit.FPDFPageObjGetType(obj) == 2 /* path */ && IsPageSized(page, ob)) continue;
-                    if (fpdf_edit.FPDFPageRemoveObject(page, obj) != 0) { fpdf_edit.FPDFPageObjDestroy(obj); removed++; }
-                }
-                foreach (var box in boxes)
-                {
-                    var rect = fpdf_edit.FPDFPageObjCreateNewRect((float)box.Left, (float)box.Bottom, (float)box.Width, (float)box.Height);
-                    fpdf_edit.FPDFPageObjSetFillColor(rect, fill.R, fill.G, fill.B, 255);
-                    fpdf_edit.FPDFPathSetDrawMode(rect, 1, 0);
-                    fpdf_edit.FPDFPageInsertObject(page, rect);
-                }
-                fpdf_edit.FPDFPageGenerateContent(page);
-            }
-            finally { fpdfview.FPDF_ClosePage(page); }
-        }
-        IsModified = true;
-        return removed;
-    }
+    public int Redact(int pageIndex, IReadOnlyList<PageRect> areas, PdfColor fill) => RedactPage(pageIndex, areas, fill).Total;
 
     static bool IsPageSized(FpdfPageT page, PageRect box)
     {

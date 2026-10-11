@@ -13,7 +13,7 @@ using PdfSharp.Pdf.Signatures;
 namespace Pagjoro.Core.Pdf;
 
 /// <summary>One signature found in a document, and what could be checked about it.</summary>
-public sealed record SignatureInfo(int Index, string Signer, string SignedAt, string Reason, bool Intact, bool CoversWholeFile, bool CertificateTrusted, string Summary);
+public sealed record SignatureInfo(int Index, string Signer, string SignedAt, string Reason, bool Intact, bool CoversWholeFile, bool CertificateTrusted, string Summary, bool TimeStamped = false);
 
 /// <summary>Signs documents with a certificate from the person's own store, and checks signatures in documents.</summary>
 public static class PdfSigning
@@ -50,21 +50,27 @@ public static class PdfSigning
         store.Add(cert);
         return cert;
     }
-    sealed class CertificateSigner(X509Certificate2 certificate) : IDigitalSigner
+    sealed class CertificateSigner(X509Certificate2 certificate, string? timestampUrl = null) : IDigitalSigner
     {
         public string CertificateName => certificate.GetNameInfo(X509NameType.SimpleName, false);
 
-        byte[] Cms(byte[] data)
+        byte[] Cms(byte[] data, bool stamp = false)
         {
             var content = new ContentInfo(data);
             var signed = new SignedCms(content, detached: true);
             var signer = new CmsSigner(SubjectIdentifierType.IssuerAndSerialNumber, certificate) { DigestAlgorithm = new Oid("2.16.840.1.101.3.4.2.1"), IncludeOption = X509IncludeOption.WholeChain };
             signer.SignedAttributes.Add(new Pkcs9SigningTime());
             signed.ComputeSignature(signer);
+            if (stamp && !string.IsNullOrWhiteSpace(timestampUrl))
+            {
+                var info = signed.SignerInfos[0];
+                var token = Timestamp.Request(timestampUrl, info.GetSignature());
+                info.AddUnsignedAttribute(new AsnEncodedData(new Oid(Timestamp.TokenOid), token));
+            }
             return signed.Encode();
         }
 
-        public Task<int> GetSignatureSizeAsync() => Task.FromResult(Cms(new byte[] { 1 }).Length + 2048);
+        public Task<int> GetSignatureSizeAsync() => Task.FromResult(Cms(new byte[] { 1 }).Length + 2048 + (string.IsNullOrWhiteSpace(timestampUrl) ? 0 : 12288));
 
         public async Task<byte[]> GetSignatureAsync(Stream stream)
         {
@@ -78,7 +84,7 @@ public static class PdfSigning
                 read += n;
             }
             if (read != data.Length) throw new PdfException("Pagjoro could not read the document to sign it.");
-            return Cms(data);
+            return Cms(data, stamp: true);
         }
     }
     sealed class TextAppearance(string[] lines) : IAnnotationAppearanceHandler
@@ -100,7 +106,7 @@ public static class PdfSigning
     /// Signs the document. When <paramref name="visibleArea"/> is given, a box with the signer's name, the date and the reason is drawn on that
     /// page. The result is a new file; any later change to it breaks the signature (that is what a signature is for).
     /// </summary>
-    public static byte[] Sign(byte[] pdf, X509Certificate2 certificate, string reason = "", string location = "", string contact = "", int pageIndex = 0, PageRect? visibleArea = null)
+    public static byte[] Sign(byte[] pdf, X509Certificate2 certificate, string reason = "", string location = "", string contact = "", int pageIndex = 0, PageRect? visibleArea = null, string? timestampUrl = null)
     {
         if (!certificate.HasPrivateKey) throw new PdfException("That certificate has no private key on this computer, so it cannot be used to sign.");
         PdfDocument doc;
@@ -127,7 +133,7 @@ public static class PdfSigning
                 ContactInfo = contact, Location = location, Reason = reason, AppName = "Pagjoro", PageIndex = index,
                 Rectangle = rectangle, AppearanceHandler = appearance,
             };
-            var handler = DigitalSignatureHandler.ForDocument(doc, new CertificateSigner(certificate), options);
+            var handler = DigitalSignatureHandler.ForDocument(doc, new CertificateSigner(certificate, timestampUrl), options);
             using var ms = new MemoryStream();
             doc.Save(ms, false);
             GC.KeepAlive(handler);
@@ -144,7 +150,7 @@ public static class PdfSigning
         using var file = PdfFile.Open(pdf);
         foreach (var raw in file.ReadSignatures())
         {
-            var signer = "unknown"; var intact = false; var trusted = false;
+            var signer = "unknown"; var intact = false; var trusted = false; var stamped = false;
             var reasonText = raw.Reason;
             try
             {
@@ -157,6 +163,8 @@ public static class PdfSigning
                     var cms = new SignedCms(new ContentInfo(signedData), detached: true);
                     cms.Decode(content);
                     var cert = cms.SignerInfos.Count > 0 ? cms.SignerInfos[0].Certificate : null;
+                    if (cms.SignerInfos.Count > 0)
+                        foreach (var attr in cms.SignerInfos[0].UnsignedAttributes) if (attr.Oid?.Value == Timestamp.TokenOid) stamped = true;
                     if (cert is not null) signer = cert.GetNameInfo(X509NameType.SimpleName, false);
                     try { cms.CheckSignature(verifySignatureOnly: true); intact = true; } catch (CryptographicException) { intact = false; }
                     if (cert is not null)
@@ -175,7 +183,8 @@ public static class PdfSigning
                 : !whole ? "The signature is valid, but the document was changed after it was signed."
                 : trusted ? $"Signed by {signer}. The document has not changed since."
                 : $"Signed by {signer}. The document has not changed since, but this computer does not trust the signer's certificate.";
-            result.Add(new SignatureInfo(raw.Index, signer, raw.Time, reasonText, intact, whole, trusted, summary));
+            if (stamped && intact) summary += " A trusted time stamp proves when it was signed.";
+            result.Add(new SignatureInfo(raw.Index, signer, raw.Time, reasonText, intact, whole, trusted, summary, stamped));
         }
         return result;
     }

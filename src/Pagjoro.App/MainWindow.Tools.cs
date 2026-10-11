@@ -59,12 +59,18 @@ public partial class MainWindow
     void OnTextRequested(int page, double x, double y)
     {
         if (doc is null) return;
-        var text = Forms.TextToAdd(this, out var size, out var font);
-        if (text is null) return;
+        var choice = Forms.TextToAdd(this);
+        if (choice is null) return;
         PushUndo();
-        doc.AddText(page, text, x, y - size * 0.8, size, PdfColor.Black, font);
+        var lead = choice.Size * 1.2;
+        var line = 0;
+        foreach (var piece in choice.Text.Split('\n'))
+        {
+            if (piece.Trim().Length > 0) doc.AddText(page, piece.TrimEnd('\r'), x, y - choice.Size * 0.8 - line * lead, choice.Size, choice.Color, choice.Font);
+            line++;
+        }
         View.InvalidatePage(page); AfterEdit();
-        MessageStatus.Text = "Text added.";
+        MessageStatus.Text = "Text added. Use Edit Text or Pictures to change or move it.";
     }
 
     void OnAreaChosen(ViewTool tool, int page, PageRect area)
@@ -78,6 +84,7 @@ public partial class MainWindow
             return;
         }
         if (tool is ViewTool.TextField or ViewTool.CheckField) { AddField(tool, page, area); return; }
+        if (tool == ViewTool.LinkArea) { AddLink(page, area); return; }
         if (tool != ViewTool.Image) return;
         var d = new OpenFileDialog { Filter = PictureFilter, Title = "Choose a picture to place" };
         if (d.ShowDialog(this) != true) return;
@@ -236,20 +243,6 @@ public partial class MainWindow
         Dialogs.Info(this, "Remove Hidden Data", report.NothingFound ? "No hidden data was found." : "Removed:\n\n• " + string.Join("\n• ", report.Removed) + "\n\nSave the file to keep the change.");
     }
 
-    void OnCompress(object sender, RoutedEventArgs e)
-    {
-        if (doc is null) return;
-        try
-        {
-            var before = doc.ToBytes(removeSecurity: true);
-            var after = PdfProtection.Recompress(before);
-            if (after.Length >= before.Length) { Dialogs.Info(this, "Reduce File Size", "This file is already as small as Pagjoro can make it without losing quality."); return; }
-            PushUndo();
-            ReplaceDocument(PdfFile.FromBytes(after), $"File size reduced from {before.Length / 1024:N0} KB to {after.Length / 1024:N0} KB. Save to keep it.");
-        }
-        catch (PdfException ex) { Dialogs.Info(this, "Pagjoro", ex.Message, error: true); }
-    }
-
     void OnEditInfo(object sender, RoutedEventArgs e)
     {
         if (doc is null) return;
@@ -295,14 +288,16 @@ public partial class MainWindow
         MessageStatus.Text = "Drag a box on the page where the signature should appear.";
     }
 
-    void SignNow(Forms.SignChoice choice, int page, PageRect? area)
+    async void SignNow(Forms.SignChoice choice, int page, PageRect? area)
     {
         if (doc is null) return;
         var save = new SaveFileDialog { Filter = "PDF files (*.pdf)|*.pdf", FileName = DefaultName("signed"), Title = "Save the signed copy as" };
         if (save.ShowDialog(this) != true) return;
         try
         {
-            var signed = PdfSigning.Sign(doc.ToBytes(removeSecurity: true), choice.Certificate, choice.Reason, choice.Location, choice.Contact, page, area);
+            var source = doc.ToBytes(removeSecurity: true);
+            MessageStatus.Text = choice.TimestampUrl is null ? "Signing..." : "Signing and getting a time stamp...";
+            var signed = await Task.Run(() => PdfSigning.Sign(source, choice.Certificate, choice.Reason, choice.Location, choice.Contact, page, area, choice.TimestampUrl));
             File.WriteAllBytes(save.FileName, signed);
         }
         catch (Exception ex) when (ex is PdfException or IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)

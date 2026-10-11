@@ -8,7 +8,7 @@
 
 On that page, download **Pagjoro.exe** under **Assets** and double-click it. There is no installer. (Early previews are marked *Pre-release*; if the link above says there is no release, open the [releases page](https://github.com/Tusivo/Pagjoro/releases) and choose the newest one.)
 
-> **Status: v0.6.0-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
+> **Status: v0.7.0-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
 
 ![Pagjoro's start screen with its purple icon, an Open a PDF button, and the menus and toolbar above](docs/screenshots/welcome-light.png)
 *The start screen: open a PDF or drag one onto the window. Menus and a toolbar that stays put. (Light theme.)*
@@ -60,13 +60,13 @@ Each phase ends with something you can use.
 | 2 | Organize and create | **Done** |
 | 3 | Annotate and review | **Done** |
 | 4 | Forms | **Done** (fill, add text fields and check boxes) |
-| 5 | Edit content | Partly done (add text and pictures, watermarks, headers, footers, numbering) |
+| 5 | Edit content | **Done** (change, move and delete text and pictures; add text, pictures, stamps, links, watermarks, headers, footers, numbering) |
 | 6 | Protect and redact | **Done** |
 | 7 | Sign and certify | **Done** |
-| 8 | Scan and OCR | Planned |
-| 9 | Convert and export | Partly done (pages to images, text, pictures to PDF) |
-| 10 | Compare, optimize, check | Partly done (compare, reduce file size) |
-| 11 | Automation | Planned |
+| 8 | Scan and OCR | **Done** (text recognition with the engine built into Windows; scanning with the Windows scanner service) |
+| 9 | Convert and export | **Done** (images, text, web page, Word, Excel, CSV; Office files and pictures to PDF) |
+| 10 | Compare, optimize, check | **Done** (compare, reduce file size, accessibility and print checks) |
+| 11 | Automation | **Done** (saved action sequences, batch processing, safety copy of unsaved work) |
 
 ## Getting Pagjoro
 

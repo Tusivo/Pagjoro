@@ -79,6 +79,9 @@ public partial class MainWindow : Window
         View.NoteRequested += OnNoteRequested;
         View.StatusMessage += s => MessageStatus.Text = s;
         WireTools();
+        WireEditing();
+        WireMore();
+        StartRecovery();
         InitMenusAndToolbar();
         InitTheme();
         ShowRecent();
@@ -86,6 +89,7 @@ public partial class MainWindow : Window
         {
             var arg = Environment.GetCommandLineArgs().Skip(1).FirstOrDefault(a => a.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) && File.Exists(a));
             if (arg is not null) OpenPath(arg);
+            else OfferRecovery();
         };
         UpdateEnabled();
     }
@@ -273,7 +277,7 @@ public partial class MainWindow : Window
     {
         if (doc is null) return true;
         if (doc.Path is null) return SaveAs();
-        try { doc.SaveTo(doc.Path); UpdateTitle(); MessageStatus.Text = "Saved."; return true; }
+        try { doc.SaveTo(doc.Path); ClearRecovery(); UpdateTitle(); MessageStatus.Text = "Saved."; return true; }
         catch (PdfException ex) { Dialogs.Info(this, "Pagjoro", ex.Message, error: true); return false; }
     }
 
@@ -282,14 +286,14 @@ public partial class MainWindow : Window
         if (doc is null) return true;
         var d = new SaveFileDialog { Filter = "PDF files (*.pdf)|*.pdf", FileName = doc.Path is null ? "Document.pdf" : Path.GetFileName(doc.Path), Title = "Save a copy" };
         if (d.ShowDialog(this) != true) return false;
-        try { doc.SaveTo(d.FileName); recent.Add(d.FileName); ShowRecent(); UpdateTitle(); MessageStatus.Text = "Saved."; return true; }
+        try { doc.SaveTo(d.FileName); ClearRecovery(); recent.Add(d.FileName); ShowRecent(); UpdateTitle(); MessageStatus.Text = "Saved."; return true; }
         catch (PdfException ex) { Dialogs.Info(this, "Pagjoro", ex.Message, error: true); return false; }
     }
 
     void OnSave(object sender, RoutedEventArgs e) => Save();
     void OnSaveAs(object sender, RoutedEventArgs e) => SaveAs();
     void OnCloseFile(object sender, RoutedEventArgs e) { if (ConfirmClose()) { undo.Clear(); redo.Clear(); SetDocument(null); } }
-    void OnClosing(object? sender, CancelEventArgs e) { if (!ConfirmClose()) e.Cancel = true; }
+    void OnClosing(object? sender, CancelEventArgs e) { if (!ConfirmClose()) e.Cancel = true; else ClearRecovery(); }
 
     void OnProperties(object sender, RoutedEventArgs e)
     {
@@ -386,7 +390,7 @@ public partial class MainWindow : Window
 
     void SelectTool(string tag)
     {
-        foreach (var t in new[] { ToolSelect, ToolHighlight, ToolUnderline, ToolStrike, ToolNote, ToolDraw, ToolRect, ToolOval, ToolRedact, ToolText, ToolImage, ToolField, ToolCheck }) t.IsChecked = (string)t.Tag == tag;
+        foreach (var t in new[] { ToolSelect, ToolHighlight, ToolUnderline, ToolStrike, ToolNote, ToolDraw, ToolRect, ToolOval, ToolRedact, ToolText, ToolImage, ToolField, ToolCheck, ToolEdit }) t.IsChecked = (string)t.Tag == tag;
         View.Tool = Enum.Parse<ViewTool>(tag);
         MessageStatus.Text = View.Tool switch
         {
@@ -398,6 +402,9 @@ public partial class MainWindow : Window
             ViewTool.Redact => "Drag a box over what must be removed, then press Apply Redactions.",
             ViewTool.Text => "Click on the page where the text should go.",
             ViewTool.Image => "Drag a box where the picture should go.",
+            ViewTool.Stamp => "Click on the page where the stamp should go.",
+            ViewTool.LinkArea => "Drag a box over the words or area that should become a link.",
+            ViewTool.EditContent => "Click text or a picture to change it. Drag it to move it.",
             ViewTool.TextField => "Drag a box where the text field should go.",
             ViewTool.CheckField => "Drag a small box where the check box should go.",
             _ => "",
@@ -662,12 +669,17 @@ public partial class MainWindow : Window
         if (View.PendingRedactionCount == 0) { Dialogs.Info(this, "Redaction", "Nothing is marked yet. Use Mark for Redaction, then drag a box over what must be removed."); return; }
         if (!Dialogs.Confirm(this, "Apply Redactions",
             $"This permanently removes everything under the {View.PendingRedactionCount} marked area(s) and puts a solid black block there.\n\n" +
-            "Any line of text or picture that touches a marked area is removed entirely, not just the part inside the box. After you save, the removed content cannot be recovered from the file.\n\nContinue?")) return;
+            "Only the letters and picture pixels inside the boxes are removed; the rest of each line is kept (re-set in a standard font, so its look may change slightly). A page with content that cannot be edited in place is turned into a picture. After you save, the removed content cannot be recovered from the file.\n\nContinue?")) return;
         PushUndo();
-        var removed = 0;
-        foreach (var (page, boxes) in View.PendingRedactions.ToList()) removed += doc.Redact(page, boxes, PdfColor.Black);
+        int changed = 0, rasterized = 0;
+        foreach (var (page, boxes) in View.PendingRedactions.ToList())
+        {
+            var outcome = doc.RedactPage(page, boxes, PdfColor.Black);
+            changed += outcome.Total - (outcome.PageRasterized ? 1 : 0);
+            if (outcome.PageRasterized) rasterized++;
+        }
         View.ClearPendingRedactions();
-        StructureChanged($"Redaction applied. {removed} item(s) removed. Save the file to keep the change.");
+        StructureChanged($"Redaction applied: {changed} item(s) changed" + (rasterized > 0 ? $", {rasterized} page(s) turned into pictures" : "") + ". Save the file to keep the change.");
     }
 
     // ---- converting and printing ------------------------------------------------------------------------------------

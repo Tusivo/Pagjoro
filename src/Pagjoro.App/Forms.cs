@@ -234,6 +234,49 @@ public static class Forms
         return w.ShowDialog() == true ? boxes.Where(b => b.Item1.IsChecked == true).Select(b => b.Item2).ToList() : null;
     }
 
+    public sealed record TextEditChoice(bool Delete, string Text, string Font, double Size, PdfColor Color);
+
+    static (string Family, bool Bold, bool Italic) SplitFont(string font) =>
+        (font.StartsWith("Times") ? "Serif" : font.StartsWith("Courier") ? "Fixed" : "Sans", font.Contains("Bold"), font.Contains("Italic") || font.Contains("Oblique"));
+
+    public static string JoinFont(string family, bool bold, bool italic) => family switch
+    {
+        "Serif" => bold ? (italic ? "Times-BoldItalic" : "Times-Bold") : (italic ? "Times-Italic" : "Times-Roman"),
+        "Fixed" => bold ? (italic ? "Courier-BoldOblique" : "Courier-Bold") : (italic ? "Courier-Oblique" : "Courier"),
+        _ => bold ? (italic ? "Helvetica-BoldOblique" : "Helvetica-Bold") : (italic ? "Helvetica-Oblique" : "Helvetica"),
+    };
+
+    static readonly (string Name, PdfColor? Color)[] TextColours =
+        [("Keep the current colour", null), ("Black", PdfColor.Black), ("Dark grey", new PdfColor(80, 80, 80)), ("Red", PdfColor.Red), ("Blue", PdfColor.Blue), ("Green", PdfColor.Green), ("White", PdfColor.White)];
+
+    /// <summary>Change the words, font, size or colour of a piece of text on the page, or delete it.</summary>
+    public static TextEditChoice? EditText(Window? owner, PageObjectInfo info)
+    {
+        var f = new FormBuilder(owner, "Edit Text", 560);
+        f.Note("Change the words, then press Apply. The text is set in a standard font at the same place; letters outside the standard fonts become a question mark.");
+        var text = f.Text("Text", info.Text);
+        var (family, bold, italic) = SplitFont(info.Font);
+        var fam = f.Choice("Font", ["Sans", "Serif", "Fixed width"], family == "Serif" ? 1 : family == "Fixed" ? 2 : 0);
+        var boldBox = f.Check("Bold", bold);
+        var italicBox = f.Check("Italic", italic);
+        var size = f.Text("Letter size (points)", Math.Round(info.Size, 1).ToString(System.Globalization.CultureInfo.InvariantCulture), 100);
+        var colour = f.Choice("Colour", TextColours.Select(c => c.Name));
+        var delete = f.Check("Delete this text from the page");
+        TextEditChoice? result = null;
+        if (!f.Show("Apply", () =>
+        {
+            if (delete.IsChecked != true && string.IsNullOrWhiteSpace(text.Text)) { Dialogs.Info(f.Window, "Edit Text", "Type the text, or tick Delete."); return false; }
+            if (!double.TryParse(size.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) &&
+                !double.TryParse(size.Text, out s)) { Dialogs.Info(f.Window, "Edit Text", "Type a letter size, such as 12."); return false; }
+            if (s < 4 || s > 300) { Dialogs.Info(f.Window, "Edit Text", "Type a letter size between 4 and 300."); return false; }
+            var chosen = TextColours[colour.SelectedIndex].Color ?? info.Color;
+            var fontFamily = fam.SelectedIndex == 1 ? "Serif" : fam.SelectedIndex == 2 ? "Fixed" : "Sans";
+            result = new TextEditChoice(delete.IsChecked == true, text.Text, JoinFont(fontFamily, boldBox.IsChecked == true, italicBox.IsChecked == true), s, chosen);
+            return true;
+        })) return null;
+        return result;
+    }
+
     public sealed record FormAnswer(Dictionary<string, string> Values, Dictionary<string, bool> Checks);
 
     /// <summary>One row per fillable field: a text box, a tick box or a list of choices.</summary>
@@ -280,7 +323,7 @@ public static class Forms
         return new FormAnswer(texts.ToDictionary(t => t.Name, t => t.Get()), checks.ToDictionary(c => c.Name, c => c.Box.IsChecked == true));
     }
 
-    public sealed record SignChoice(X509Certificate2 Certificate, string Reason, string Location, string Contact, bool Visible);
+    public sealed record SignChoice(X509Certificate2 Certificate, string Reason, string Location, string Contact, bool Visible, string? TimestampUrl = null);
 
     public static SignChoice? Sign(Window? owner, IReadOnlyList<X509Certificate2> certificates)
     {
@@ -292,33 +335,45 @@ public static class Forms
         var location = f.Text("Place (optional)", "");
         var contact = f.Text("Contact (optional)", "");
         var visible = f.Check("Show a signature box on the page (you will drag where it goes)", true);
+        var stamp = f.Check("Add a trusted time stamp (contacts a time stamping service; only a fingerprint of the signature is sent)");
+        var stampUrl = f.Text("Time stamping service address", "http://timestamp.digicert.com");
+        stampUrl.IsEnabled = false;
+        stamp.Click += (_, _) => stampUrl.IsEnabled = stamp.IsChecked == true;
         SignChoice? result = null;
         if (!f.Show("Continue", () =>
         {
             if (which.SelectedIndex < 0) { Dialogs.Info(f.Window, "Sign", "Choose a certificate."); return false; }
-            result = new SignChoice(certificates[which.SelectedIndex], reason.Text.Trim(), location.Text.Trim(), contact.Text.Trim(), visible.IsChecked == true);
+            result = new SignChoice(certificates[which.SelectedIndex], reason.Text.Trim(), location.Text.Trim(), contact.Text.Trim(), visible.IsChecked == true, stamp.IsChecked == true ? stampUrl.Text.Trim() : null);
             return true;
         })) return null;
         return result;
     }
 
-    public static string? TextToAdd(Window? owner, out double size, out string font)
+    public sealed record NewText(string Text, double Size, string Font, PdfColor Color);
+
+    /// <summary>Asks what text to put on the page: words (several lines allowed), font, size and colour.</summary>
+    public static NewText? TextToAdd(Window? owner)
     {
-        size = 12; font = "Helvetica";
-        var f = new FormBuilder(owner, "Add Text");
-        var text = f.Text("Text", "");
+        var f = new FormBuilder(owner, "Add Text", 540);
+        var text = f.Text("Text (press Enter for a new line)", "");
+        text.AcceptsReturn = true; text.TextWrapping = TextWrapping.Wrap; text.Height = 90; text.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+        var fam = f.Choice("Font", ["Sans", "Serif", "Fixed width"]);
+        var bold = f.Check("Bold");
+        var italic = f.Check("Italic");
         var sizeBox = f.Text("Letter size (points)", "12", 100);
-        var fontBox = f.Choice("Font", ["Helvetica", "Helvetica Bold", "Times", "Times Bold", "Courier"]);
-        var ok = false; double s = 12; var fnt = "Helvetica"; var t = "";
+        var colour = f.Choice("Colour", TextColours.Skip(1).Select(c => c.Name));
+        NewText? result = null;
         if (!f.Show("Add", () =>
         {
             if (string.IsNullOrWhiteSpace(text.Text)) { Dialogs.Info(f.Window, "Add Text", "Type the text to add."); return false; }
-            if (!double.TryParse(sizeBox.Text, out s) || s < 4 || s > 200) { Dialogs.Info(f.Window, "Add Text", "Type a letter size between 4 and 200."); return false; }
-            fnt = fontBox.SelectedIndex switch { 1 => "Helvetica-Bold", 2 => "Times-Roman", 3 => "Times-Bold", 4 => "Courier", _ => "Helvetica" };
-            t = text.Text; ok = true; return true;
+            if (!double.TryParse(sizeBox.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && !double.TryParse(sizeBox.Text, out s))
+            { Dialogs.Info(f.Window, "Add Text", "Type a letter size, such as 12."); return false; }
+            if (s < 4 || s > 200) { Dialogs.Info(f.Window, "Add Text", "Type a letter size between 4 and 200."); return false; }
+            var family = fam.SelectedIndex == 1 ? "Serif" : fam.SelectedIndex == 2 ? "Fixed" : "Sans";
+            result = new NewText(text.Text.Replace("\r\n", "\n"), s, JoinFont(family, bold.IsChecked == true, italic.IsChecked == true), TextColours[colour.SelectedIndex + 1].Color!.Value);
+            return true;
         })) return null;
-        size = s; font = fnt;
-        return ok ? t : null;
+        return result;
     }
 
     /// <summary>A window that shows the result of comparing two documents, page by page, with added words in green and removed words in red.</summary>
