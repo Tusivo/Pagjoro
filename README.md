@@ -1,3 +1,5 @@
+<p align="center"><img src="src/Pagjoro.App/Assets/Pagjoro.png" alt="The Pagjoro icon: a white page on a deep purple tile" width="128" height="128"></p>
+
 # Pagjoro
 
 **Free, open-source PDF tools that run on your own computer.** View, annotate, edit, sign, merge, split, convert and protect PDF files, with no subscription, no account and nothing uploaded.
@@ -8,8 +10,8 @@ On that page, download **Pagjoro.exe** under **Assets** and double-click it. The
 
 > **Status: v0.6.0-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
 
-![Pagjoro showing a PDF with its page thumbnails, in the light theme](docs/screenshots/viewer-light.png)
-*Reading a document: page thumbnails on the left, menus and a toolbar above. (Light theme.)*
+![Pagjoro's start screen with its purple icon, an Open a PDF button, and the menus and toolbar above](docs/screenshots/welcome-light.png)
+*The start screen: open a PDF or drag one onto the window. Menus and a toolbar that stays put. (Light theme.)*
 
 ![Pagjoro with a document marked up using highlight, underline, strike-through, a note and a box](docs/screenshots/markup-night.png)
 *Marking up: highlight, underline, strike through, notes and shapes. (Night theme.)*
