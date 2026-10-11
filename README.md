@@ -2,7 +2,23 @@
 
 **Free, open-source PDF tools that run on your own computer.** View, annotate, edit, sign, merge, split, convert and protect PDF files, with no subscription, no account and nothing uploaded.
 
-> **Status: v0.6.0-alpha.1, early development.** Pagjoro is just getting started. The foundations are in place and the PDF tools are being added phase by phase (see the [roadmap](#roadmap)). It is **not ready for real documents yet**, so please do not rely on it for anything important.
+### [Download Pagjoro for Windows](https://github.com/Tusivo/Pagjoro/releases/latest)
+
+On that page, download **Pagjoro.exe** under **Assets** and double-click it. There is no installer. (Early previews are marked *Pre-release*; if the link above says there is no release, open the [releases page](https://github.com/Tusivo/Pagjoro/releases) and choose the newest one.)
+
+> **Status: v0.6.0-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
+
+![Pagjoro showing a PDF with its page thumbnails, in the light theme](docs/screenshots/viewer-light.png)
+*Reading a document: page thumbnails on the left, menus and a toolbar above. (Light theme.)*
+
+![Pagjoro with a document marked up using highlight, underline, strike-through, a note and a box](docs/screenshots/markup-night.png)
+*Marking up: highlight, underline, strike through, notes and shapes. (Night theme.)*
+
+![Pagjoro showing a filled-in form with text fields and check boxes](docs/screenshots/forms-dark.png)
+*Forms: fill in fields and tick boxes, or add your own. (Dark theme.)*
+
+![Pagjoro's Protect menu open, listing password, redaction, signing and signature checks](docs/screenshots/protect-light.png)
+*Protect: passwords, true redaction, hidden-data removal and digital signatures. (Light theme.)*
 
 ## Why Pagjoro
 
@@ -13,9 +29,9 @@ Many people pay a monthly fee just to merge two PDFs or sign a form. Pagjoro is 
 - **Open and checkable.** The source code is public, so anyone can see exactly what the program does with a file.
 - **Windows first.** Pagjoro is a native Windows program. Other systems may come later.
 
-## What is planned
+## What it covers
 
-Pagjoro aims to cover the everyday and the professional end of PDF work. The full list is in [docs/FEATURE-MAP.md](docs/FEATURE-MAP.md); in short:
+Pagjoro aims to cover the everyday and the professional end of PDF work. The full list is in [docs/FEATURE-MAP.md](docs/FEATURE-MAP.md); in short (see the roadmap below for what is working today):
 
 | Area | Examples |
 |---|---|
@@ -37,22 +53,22 @@ Each phase ends with something you can use.
 
 | Phase | Delivers | State |
 |---|---|---|
-| 0 | Foundations: solution, policies, build, tests, signing | **In progress** |
-| 1 | View and read | Planned |
-| 2 | Organize and create | Planned |
-| 3 | Annotate and review | Planned |
-| 4 | Forms | Planned |
-| 5 | Edit content | Planned |
-| 6 | Protect and redact | Planned |
-| 7 | Sign and certify | Planned |
+| 0 | Foundations: solution, policies, build, tests, signing | **Done** |
+| 1 | View and read | **Done** |
+| 2 | Organize and create | **Done** |
+| 3 | Annotate and review | **Done** |
+| 4 | Forms | **Done** (fill, add text fields and check boxes) |
+| 5 | Edit content | Partly done (add text and pictures, watermarks, headers, footers, numbering) |
+| 6 | Protect and redact | **Done** |
+| 7 | Sign and certify | **Done** |
 | 8 | Scan and OCR | Planned |
-| 9 | Convert and export | Planned |
-| 10 | Compare, optimize, check | Planned |
+| 9 | Convert and export | Partly done (pages to images, text, pictures to PDF) |
+| 10 | Compare, optimize, check | Partly done (compare, reduce file size) |
 | 11 | Automation | Planned |
 
 ## Getting Pagjoro
 
-There is no stable release yet. When there is, the program will be one file you download from the [releases page](https://github.com/Tusivo/Pagjoro/releases) and run. There is no installer. Windows may warn about an unrecognized app the first time, because the program is not code-signed with a Windows certificate yet (choose *More info*, then *Run anyway*).
+Download **Pagjoro.exe** from the [releases page](https://github.com/Tusivo/Pagjoro/releases/latest) and run it. There is no installer. Releases are still early previews, so they are marked *Pre-release*. Windows may warn about an unrecognized app the first time, because the program is not code-signed with a Windows certificate yet (choose *More info*, then *Run anyway*).
 
 ## Updates and signatures
 
