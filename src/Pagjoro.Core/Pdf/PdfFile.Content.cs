@@ -13,6 +13,9 @@ public readonly record struct PdfColor(byte R, byte G, byte B, byte A = 255)
     public static readonly PdfColor Red = new(220, 38, 38);
     public static readonly PdfColor Blue = new(37, 99, 235);
     public static readonly PdfColor Green = new(22, 163, 74);
+    public static readonly PdfColor Orange = new(251, 140, 0);
+    public static readonly PdfColor Pink = new(236, 64, 122);
+    public static readonly PdfColor Purple = new(142, 36, 170);
 }
 
 public enum AnnotationKind

@@ -154,6 +154,9 @@
                     <MenuItem Header="_Actual Size" Click="OnActualSize" />
                     <MenuItem x:Name="FacingItem" Header="_Two Pages Side by Side" IsCheckable="True" Click="OnToggleFacing" />
                     <Separator />
+                    <MenuItem Header="Rotate View _Clockwise" InputGestureText="Ctrl+Shift+R" Click="OnRotateViewRight" />
+                    <MenuItem Header="Rotate View Counter_clockwise" InputGestureText="Ctrl+Shift+L" Click="OnRotateViewLeft" />
+                    <Separator />
                     <MenuItem Header="_Previous Page" Click="OnPrevPage" />
                     <MenuItem Header="_Next Page" Click="OnNextPage" />
                     <MenuItem Header="_Go to Page..." Click="OnGoToPage" />
@@ -169,6 +172,7 @@
                     <MenuItem Header="_Oval" Click="OnToolMenu" Tag="Ellipse" />
                     <Separator />
                     <MenuItem Header="_Marks List" Click="OnShowMarks" />
+                    <MenuItem Header="_Export Marks List..." Click="OnExportMarks" />
                 </MenuItem>
                 <MenuItem Header="_Pages">
                     <MenuItem Header="Rotate _Left" Click="OnRotateLeft" />
@@ -284,6 +288,14 @@
                         <ComboBoxItem Content="Green" Tag="Green" />
                         <ComboBoxItem Content="Blue" Tag="Blue" />
                         <ComboBoxItem Content="Red" Tag="Red" />
+                        <ComboBoxItem Content="Orange" Tag="Orange" />
+                        <ComboBoxItem Content="Pink" Tag="Pink" />
+                        <ComboBoxItem Content="Purple" Tag="Purple" />
+                    </ComboBox>
+                    <ComboBox x:Name="LineBox" Width="96" Margin="4,0,0,0" SelectionChanged="OnLineWidth" SelectedIndex="1" ToolTip="Line thickness for drawings, boxes and ovals">
+                        <ComboBoxItem Content="Thin" Tag="1" />
+                        <ComboBoxItem Content="Medium" Tag="2" />
+                        <ComboBoxItem Content="Thick" Tag="4" />
                     </ComboBox>
                     <Separator />
                     <ToggleButton x:Name="ToolEdit" Style="{StaticResource TbToggle}" Content="{local:Icon EditContent}" Click="OnTool" Tag="EditContent" ToolTip="Edit text or pictures: click one to change it, drag to move it" />

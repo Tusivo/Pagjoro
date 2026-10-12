@@ -23,7 +23,7 @@ static class StartupBounds
     [DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO info);
 
     /// <summary>Sizes and places <paramref name="window"/> before it is shown. Falls back to the primary screen's work area.</summary>
-    public static void Apply(Window window, int widthPx = 1920, int heightPx = 1080, int minWidth = 1040, int minHeight = 660)
+    public static void Apply(Window window, int widthPx = 1920, int heightPx = 1080, int minWidth = 1040, int minHeight = 660, bool adjustFrame = true)
     {
         var scale = System.Windows.Media.VisualTreeHelper.GetDpi(window);
         double sx = scale.DpiScaleX, sy = scale.DpiScaleY;
@@ -55,7 +55,7 @@ static class StartupBounds
 
         // Windows adds invisible resize borders around a window, so the visible frame comes out a little smaller than asked for.
         // Once the window exists, grow it by exactly that much so the visible window is the size that was meant (and recentre it).
-        window.SourceInitialized += (_, _) =>
+        if (adjustFrame) window.SourceInitialized += (_, _) =>
         {
             try
             {

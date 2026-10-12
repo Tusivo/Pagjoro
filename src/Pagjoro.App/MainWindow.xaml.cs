@@ -68,7 +68,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        StartupBounds.Apply(this);
+        var savedWindow = UsableWindow(settings.Window);
+        StartupBounds.Apply(this, adjustFrame: savedWindow is null);
+        if (savedWindow is { } sw) PlaceWindow(sw);
         Title = AppInfo.Name;
         VersionStatus.Text = "Pagjoro " + AppInfo.Version;
         Thumbs.ItemsSource = thumbs;
@@ -126,6 +128,7 @@ public partial class MainWindow : Window
     {
         var offset = Scroller.VerticalOffset;
         var old = doc;
+        if (keepPosition && old is not null && file is not null) file.ViewRotation = old.ViewRotation;   // an edit does not undo how the view was turned
         doc = file;
         View.SetDocument(file);
         if (keepPosition) { Scroller.UpdateLayout(); Scroller.ScrollToVerticalOffset(offset); }
@@ -141,7 +144,7 @@ public partial class MainWindow : Window
         if (doc is null) { Outline.ItemsSource = null; MarksList.ItemsSource = null; return; }
         for (var i = 0; i < doc.PageCount; i++)
         {
-            var (w, h) = doc.GetPageSize(i);
+            var (w, h) = doc.GetViewSize(i);
             thumbs.Add(new ThumbItem(doc, i, h / w));
         }
         Outline.ItemsSource = doc.GetBookmarks().Select(b => new OutlineItem(b.Title.Length == 0 ? "(no title)" : b.Title, b.PageIndex, new Thickness(b.Level * 14, 3, 0, 3))).ToList();
@@ -259,8 +262,10 @@ public partial class MainWindow : Window
         if (!ConfirmClose()) return;
         var file = OpenWithPrompt(path);
         if (file is null) return;
+        RememberView();
         undo.Clear(); redo.Clear();
         SetDocument(file);
+        RestoreView(path);
         recent.Add(path); ShowRecent();
         MessageStatus.Text = $"Opened {Path.GetFileName(path)}";
     }
@@ -294,8 +299,8 @@ public partial class MainWindow : Window
 
     void OnSave(object sender, RoutedEventArgs e) => Save();
     void OnSaveAs(object sender, RoutedEventArgs e) => SaveAs();
-    void OnCloseFile(object sender, RoutedEventArgs e) { if (ConfirmClose()) { undo.Clear(); redo.Clear(); SetDocument(null); } }
-    void OnClosing(object? sender, CancelEventArgs e) { if (!ConfirmClose()) e.Cancel = true; else ClearRecovery(); }
+    void OnCloseFile(object sender, RoutedEventArgs e) { if (ConfirmClose()) { RememberView(); undo.Clear(); redo.Clear(); SetDocument(null); } }
+    void OnClosing(object? sender, CancelEventArgs e) { if (!ConfirmClose()) e.Cancel = true; else { RememberView(); RememberWindow(); ClearRecovery(); } }
 
     void OnProperties(object sender, RoutedEventArgs e)
     {
@@ -416,7 +421,11 @@ public partial class MainWindow : Window
     void OnColor(object sender, SelectionChangedEventArgs e)
     {
         if (View is null || ColorBox.SelectedItem is not ComboBoxItem item) return;
-        View.MarkColor = (string)item.Tag switch { "Green" => PdfColor.Green, "Blue" => PdfColor.Blue, "Red" => PdfColor.Red, _ => PdfColor.Yellow };
+        View.MarkColor = (string)item.Tag switch
+        {
+            "Green" => PdfColor.Green, "Blue" => PdfColor.Blue, "Red" => PdfColor.Red, "Orange" => PdfColor.Orange,
+            "Pink" => PdfColor.Pink, "Purple" => PdfColor.Purple, _ => PdfColor.Yellow,
+        };
     }
 
     void OnMarkSelection(object sender, RoutedEventArgs e)
@@ -700,7 +709,7 @@ public partial class MainWindow : Window
                 for (var i = 0; i < file.PageCount; i++)
                 {
                     var (w, h) = file.GetPageSize(i);
-                    var img = file.Render(i, (int)Math.Round(w / 72 * 150), (int)Math.Round(h / 72 * 150));
+                    var img = file.Render(i, (int)Math.Round(w / 72 * 150), (int)Math.Round(h / 72 * 150), rotation: 0);
                     var bmp = BitmapSource.Create(img.Width, img.Height, 150, 150, PixelFormats.Bgra32, null, img.Pixels, img.Stride);
                     var enc = new PngBitmapEncoder(); enc.Frames.Add(BitmapFrame.Create(bmp));
                     using var fs = File.Create(Path.Combine(dir, $"{baseName} - page {i + 1}.png"));
@@ -741,7 +750,7 @@ public partial class MainWindow : Window
             var (w, h) = doc.GetPageSize(i);
             var scale = Math.Min(pageW / (w * 96 / 72), pageH / (h * 96 / 72));
             var dipW = w * 96 / 72 * scale; var dipH = h * 96 / 72 * scale;
-            var img = doc.Render(i, (int)(dipW * 300 / 96), (int)(dipH * 300 / 96));
+            var img = doc.Render(i, (int)(dipW * 300 / 96), (int)(dipH * 300 / 96), rotation: 0);
             var bmp = BitmapSource.Create(img.Width, img.Height, 300, 300, PixelFormats.Bgra32, null, img.Pixels, img.Stride);
             var fp = new FixedPage { Width = pageW, Height = pageH };
             var image = new Image { Source = bmp, Width = dipW, Height = dipH };

@@ -62,6 +62,9 @@ public sealed class DocumentView : FrameworkElement
         ViewChanged?.Invoke();
     }
     public PdfColor MarkColor { get; set; } = PdfColor.Yellow;
+
+    /// <summary>Thickness, in points, of freehand lines and of box and oval outlines.</summary>
+    public double LineWidth { get; set; } = 2;
     public double Zoom => zoom;
     public int PageCount => doc?.PageCount ?? 0;
     public string SelectedText => selText;
@@ -163,11 +166,11 @@ public sealed class DocumentView : FrameworkElement
         const double pairGapPts = 10;
         for (var i = 0; i < count; i++)
         {
-            var (w, h) = doc.GetPageSize(i);
+            var (w, h) = doc.GetViewSize(i);
             if (Facing && i + 1 < count)
             {
                 // two pages side by side, tops aligned, the pair centred as one
-                var (w2, h2) = doc.GetPageSize(i + 1);
+                var (w2, h2) = doc.GetViewSize(i + 1);
                 var pairWidth = w + pairGapPts + w2;
                 slots.Add(new Slot(top, w, h, pairWidth, 0));
                 slots.Add(new Slot(top, w2, h2, pairWidth, w + pairGapPts));
@@ -555,14 +558,14 @@ public sealed class DocumentView : FrameworkElement
                 case ViewTool.Draw when inkPoints is { Count: > 1 }:
                     var pts = inkPoints.Select(pt => ToPagePoint(page, rect, pt)).ToList();
                     BeforeEdit?.Invoke();
-                    doc.AddInk(page, pts, MarkColor == PdfColor.Yellow ? PdfColor.Red : MarkColor);
+                    doc.AddInk(page, pts, MarkColor == PdfColor.Yellow ? PdfColor.Red : MarkColor, LineWidth);
                     InvalidatePage(page); DocumentEdited?.Invoke();
                     break;
                 case ViewTool.Rectangle or ViewTool.Ellipse when moved:
                     var area = doc.DeviceRectToPage(page, vw, vh, (Math.Min(dragFrom.X, dragTo.X) - rect.Left) * MapScale, (Math.Min(dragFrom.Y, dragTo.Y) - rect.Top) * MapScale,
                         (Math.Max(dragFrom.X, dragTo.X) - rect.Left) * MapScale, (Math.Max(dragFrom.Y, dragTo.Y) - rect.Top) * MapScale);
                     BeforeEdit?.Invoke();
-                    doc.AddShape(page, Tool == ViewTool.Rectangle ? AnnotationKind.Square : AnnotationKind.Circle, area, MarkColor == PdfColor.Yellow ? PdfColor.Red : MarkColor);
+                    doc.AddShape(page, Tool == ViewTool.Rectangle ? AnnotationKind.Square : AnnotationKind.Circle, area, MarkColor == PdfColor.Yellow ? PdfColor.Red : MarkColor, null, LineWidth);
                     InvalidatePage(page); DocumentEdited?.Invoke();
                     break;
                 case ViewTool.Redact when moved:

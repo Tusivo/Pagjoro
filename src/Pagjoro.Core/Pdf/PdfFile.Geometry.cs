@@ -6,6 +6,19 @@ namespace Pagjoro.Core.Pdf;
 public sealed partial class PdfFile
 {
     /// <summary>
+    /// How the pages are turned on screen, in quarter turns clockwise (0 to 3). This is only a way of looking: it is not saved in the file and
+    /// does not change the pages' own rotation. Rendering and the page/picture conversions below follow it.
+    /// </summary>
+    public int ViewRotation { get; set; }
+
+    /// <summary>The page's size in points as it appears with the view turn applied.</summary>
+    public (double Width, double Height) GetViewSize(int index)
+    {
+        var (w, h) = GetPageSize(index);
+        return (ViewRotation & 1) == 1 ? (h, w) : (w, h);
+    }
+
+    /// <summary>
     /// Maps a point in page space (points, origin bottom-left) to a position in a picture of the page that is
     /// <paramref name="sizeX"/> by <paramref name="sizeY"/> pixels, taking the page's rotation and crop into account. The y axis points down.
     /// </summary>
@@ -18,7 +31,7 @@ public sealed partial class PdfFile
             try
             {
                 int dx = 0, dy = 0;
-                fpdfview.FPDF_PageToDevice(page, 0, 0, sizeX, sizeY, 0, pageX, pageY, ref dx, ref dy);
+                fpdfview.FPDF_PageToDevice(page, 0, 0, sizeX, sizeY, ViewRotation & 3, pageX, pageY, ref dx, ref dy);
                 return (dx, dy);
             }
             finally { fpdfview.FPDF_ClosePage(page); }
@@ -35,7 +48,7 @@ public sealed partial class PdfFile
             try
             {
                 double px = 0, py = 0;
-                fpdfview.FPDF_DeviceToPage(page, 0, 0, sizeX, sizeY, 0, (int)Math.Round(deviceX), (int)Math.Round(deviceY), ref px, ref py);
+                fpdfview.FPDF_DeviceToPage(page, 0, 0, sizeX, sizeY, ViewRotation & 3, (int)Math.Round(deviceX), (int)Math.Round(deviceY), ref px, ref py);
                 return (px, py);
             }
             finally { fpdfview.FPDF_ClosePage(page); }
@@ -55,8 +68,8 @@ public sealed partial class PdfFile
                 foreach (var r in rects)
                 {
                     int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-                    fpdfview.FPDF_PageToDevice(page, 0, 0, sizeX, sizeY, 0, r.Left, r.Top, ref x1, ref y1);
-                    fpdfview.FPDF_PageToDevice(page, 0, 0, sizeX, sizeY, 0, r.Right, r.Bottom, ref x2, ref y2);
+                    fpdfview.FPDF_PageToDevice(page, 0, 0, sizeX, sizeY, ViewRotation & 3, r.Left, r.Top, ref x1, ref y1);
+                    fpdfview.FPDF_PageToDevice(page, 0, 0, sizeX, sizeY, ViewRotation & 3, r.Right, r.Bottom, ref x2, ref y2);
                     result.Add((Math.Min(x1, x2), Math.Min(y1, y2), Math.Max(x1, x2), Math.Max(y1, y2)));
                 }
             }

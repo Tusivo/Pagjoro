@@ -58,13 +58,13 @@ public partial class MainWindow
         {
             TextWrapping = TextWrapping.Wrap, Opacity = 0.8, Margin = new Thickness(0, 0, 0, 14),
             Text = "If you move Pagjoro.exe to another folder, open this window again so Windows learns the new place. " +
-                   "\"Remove entries\" takes Pagjoro out of the list again.",
+                   "\"Remove Entries\" takes Pagjoro out of the list again.",
         };
         panel.Children.Add(note);
 
         var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
         var go = new Button { Content = "Tell Windows and Open Settings", IsDefault = true, Padding = new Thickness(16, 6, 16, 6) };
-        var remove = new Button { Content = "Remove entries", Padding = new Thickness(14, 6, 14, 6), Margin = new Thickness(8, 0, 0, 0) };
+        var remove = new Button { Content = "Remove Entries", Padding = new Thickness(14, 6, 14, 6), Margin = new Thickness(8, 0, 0, 0) };
         var close = new Button { Content = "Close", IsCancel = true, Padding = new Thickness(16, 6, 16, 6), Margin = new Thickness(8, 0, 0, 0) };
         go.Click += (_, _) =>
         {

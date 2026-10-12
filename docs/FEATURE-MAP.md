@@ -28,10 +28,11 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 | Open password-protected files | ✔ | |
 | Recent files | ✔ | |
 | Keyboard shortcuts (zoom, page, search, go to page) | ✔ | |
-| Rotate the view without changing the file | ○ | Rotating pages themselves is done (Phase 2) |
+| Rotate the view without changing the file | ✔ | Rotating pages themselves is in Phase 2 |
 | Read aloud and high-contrast viewing | ○ | Windows speech APIs |
 | Measure distance, area, perimeter | ○ | |
-| Reopen at the last page | ○ | |
+| Reopen at the last page and zoom | ✔ | Remembers the last 100 files |
+| Window opens where it was left | ✔ | |
 | Layers pane | ○ | |
 
 ## Phase 2: Organize and create
@@ -55,8 +56,9 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 | Shapes (box, oval) and freehand drawing | ✔ | |
 | Stamps, with ready-made and custom words and the date | ✔ | |
 | Marks list | ✔ | |
+| Export the marks list (text or spreadsheet) | ✔ | Page, type, the words marked and the comment |
+| Highlight colours (seven) and line thickness | ✔ | |
 | Compare two documents | ✔ | Word by word, page by page |
-| Comment summary and export | ○ | |
 | Collect and merge comments from several copies | ○ | |
 
 ## Phase 4: Forms

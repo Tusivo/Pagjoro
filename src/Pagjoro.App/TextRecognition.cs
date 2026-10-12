@@ -49,7 +49,7 @@ sealed class TextRecognition
         var maxSide = (int)Math.Min(OcrEngine.MaxImageDimension, 6000);
         var scale = Math.Min(dpi / 72.0, maxSide / Math.Max(w, h));
         var wpx = Math.Max(16, (int)Math.Round(w * scale)); var hpx = Math.Max(16, (int)Math.Round(h * scale));
-        var image = await Task.Run(() => file.Render(pageIndex, wpx, hpx, annotations: false));
+        var image = await Task.Run(() => file.Render(pageIndex, wpx, hpx, annotations: false, rotation: 0));
 
         using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(image.Pixels.AsBuffer(), BitmapPixelFormat.Bgra8, image.Width, image.Height, BitmapAlphaMode.Ignore);
         var result = await engine.RecognizeAsync(bitmap);

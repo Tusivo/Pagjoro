@@ -95,6 +95,8 @@ public partial class MainWindow
                 case Key.D0 or Key.NumPad0 when ctrl: View.FitPage(); e.Handled = true; return;
                 case Key.D1 or Key.NumPad1 when ctrl: View.SetZoom(1.0); e.Handled = true; return;
                 case Key.D2 or Key.NumPad2 when ctrl: View.FitWidth(); e.Handled = true; return;
+                case Key.R when ctrl && shift: OnRotateViewRight(this, e); e.Handled = true; return;
+                case Key.L when ctrl && shift: OnRotateViewLeft(this, e); e.Handled = true; return;
                 case Key.G when ctrl: OnGoToPage(this, e); e.Handled = true; return;
                 case Key.PageDown when !ctrl && !Thumbs.IsKeyboardFocusWithin: View.ScrollToPage(Math.Min(View.PageCount - 1, View.CurrentPage + 1)); e.Handled = true; return;
                 case Key.PageUp when !ctrl && !Thumbs.IsKeyboardFocusWithin: View.ScrollToPage(Math.Max(0, View.CurrentPage - 1)); e.Handled = true; return;

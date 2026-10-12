@@ -211,7 +211,7 @@ public sealed partial class PdfFile : IDisposable
     // ---- looking at a page ------------------------------------------------------------------------------------------
 
     /// <summary>Draws a page into a bitmap of the given size in pixels (the whole page is scaled to fit).</summary>
-    public PageImage Render(int index, int widthPx, int heightPx, bool annotations = true)
+    public PageImage Render(int index, int widthPx, int heightPx, bool annotations = true, int? rotation = null)
     {
         Check(); ValidatePage(index);
         if (widthPx < 1 || heightPx < 1 || (long)widthPx * heightPx > 120_000_000) throw new ArgumentOutOfRangeException(nameof(widthPx), "That picture size is not possible.");
@@ -222,8 +222,9 @@ public sealed partial class PdfFile : IDisposable
             try
             {
                 fpdfview.FPDFBitmapFillRect(bitmap, 0, 0, widthPx, heightPx, 0xFFFFFFFF);
-                fpdfview.FPDF_RenderPageBitmap(bitmap, page, 0, 0, widthPx, heightPx, 0, annotations ? 0x01 : 0);
-                if (annotations) DrawFormFields(bitmap, page, widthPx, heightPx);
+                var turn = (rotation ?? ViewRotation) & 3;
+                fpdfview.FPDF_RenderPageBitmap(bitmap, page, 0, 0, widthPx, heightPx, turn, annotations ? 0x01 : 0);
+                if (annotations) DrawFormFields(bitmap, page, widthPx, heightPx, turn);
                 var stride = fpdfview.FPDFBitmapGetStride(bitmap);
                 var pixels = new byte[stride * heightPx];
                 Marshal.Copy(fpdfview.FPDFBitmapGetBuffer(bitmap), pixels, 0, pixels.Length);
@@ -238,7 +239,7 @@ public sealed partial class PdfFile : IDisposable
     }
 
     /// <summary>The page renderer leaves form fields out; they are drawn by the form-fill layer. Caller holds the engine gate.</summary>
-    void DrawFormFields(FpdfBitmapT bitmap, FpdfPageT page, int widthPx, int heightPx)
+    void DrawFormFields(FpdfBitmapT bitmap, FpdfPageT page, int widthPx, int heightPx, int turn)
     {
         var info = new FPDF_FORMFILLINFO();
         // the structure comes back from native memory unzeroed: clear every callback so the engine calls nothing stale
@@ -250,7 +251,7 @@ public sealed partial class PdfFile : IDisposable
         try
         {
             fpdf_formfill.FORM_OnAfterLoadPage(page, form);
-            fpdf_formfill.FPDF_FFLDraw(form, bitmap, page, 0, 0, widthPx, heightPx, 0, 0);
+            fpdf_formfill.FPDF_FFLDraw(form, bitmap, page, 0, 0, widthPx, heightPx, turn, 0);
             fpdf_formfill.FORM_OnBeforeClosePage(page, form);
         }
         finally
@@ -263,7 +264,7 @@ public sealed partial class PdfFile : IDisposable
     /// <summary>Renders a page so that its longer side is about <paramref name="longSidePx"/> pixels.</summary>
     public PageImage RenderFit(int index, int longSidePx, bool annotations = true)
     {
-        var (w, h) = GetPageSize(index);
+        var (w, h) = GetViewSize(index);
         var scale = longSidePx / Math.Max(w, h);
         return Render(index, Math.Max(1, (int)Math.Round(w * scale)), Math.Max(1, (int)Math.Round(h * scale)), annotations);
     }
