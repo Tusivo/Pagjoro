@@ -29,6 +29,7 @@
             <Setter Property="Template" Value="{StaticResource SlimHeader}" />
         </Style>
         <Style x:Key="Tb" TargetType="Button">
+            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Padding" Value="6,5" />
             <Setter Property="Margin" Value="1,0" />
             <Setter Property="Background" Value="Transparent" />
@@ -50,6 +51,7 @@
             </Setter>
         </Style>
         <Style x:Key="TbToggle" TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Padding" Value="6,5" />
             <Setter Property="Margin" Value="1,0" />
             <Setter Property="Background" Value="Transparent" />
@@ -267,10 +269,10 @@
                         <Button Style="{StaticResource Tb}" Content="{local:Icon FitWidth}" Click="OnFitWidth" ToolTip="Fit the page to the window width" />
                         <Button Style="{StaticResource Tb}" Content="{local:Icon FitPage}" Click="OnFitPage" ToolTip="Fit the whole page in the window" />
                         <Separator />
-                        <Button Style="{StaticResource Tb}" Content="{local:Icon Prev}" Click="OnPrevPage" ToolTip="Previous page" />
-                        <TextBox x:Name="PageBox" Width="46" TextAlignment="Center" Margin="2,0" ToolTip="Page number (press Enter to go)" KeyDown="OnPageBoxKey" />
-                        <TextBlock x:Name="PageOf" Text="/ 0" VerticalAlignment="Center" Margin="2,0,6,0" />
-                        <Button Style="{StaticResource Tb}" Content="{local:Icon Next}" Click="OnNextPage" ToolTip="Next page" />
+                        <Button Style="{StaticResource Tb}" Padding="3,5" Margin="0" Content="{local:Icon Prev}" Click="OnPrevPage" ToolTip="Previous page" />
+                        <TextBox x:Name="PageBox" Width="40" Height="24" MinHeight="0" Padding="2,0" Margin="2,0,0,0" TextAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" ToolTip="Page number (press Enter to go)" KeyDown="OnPageBoxKey" />
+                        <TextBlock x:Name="PageOf" Text="/ 0" VerticalAlignment="Center" Margin="5,0,3,0" />
+                        <Button Style="{StaticResource Tb}" Padding="3,5" Margin="0" Content="{local:Icon Next}" Click="OnNextPage" ToolTip="Next page" />
                         <Separator />
                         <Button Style="{StaticResource Tb}" Content="{local:Icon Find}" Click="OnFocusSearch" ToolTip="Search the document (Ctrl+F)" />
                     </ToolBar>
