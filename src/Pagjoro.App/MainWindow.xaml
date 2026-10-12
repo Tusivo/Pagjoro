@@ -239,6 +239,7 @@
                     <MenuItem Header="Export as _CSV..." Click="OnExportCsv" />
                 </MenuItem>
                 <MenuItem Header="_Help">
+                    <MenuItem Header="_Keyboard Shortcuts" Click="OnShortcuts" />
                     <MenuItem Header="Make Pagjoro the _Default PDF App..." Click="OnDefaultApp" />
                     <MenuItem Header="_Check for Updates..." Click="OnCheckUpdates" />
                     <MenuItem Header="_About Pagjoro" Click="OnAbout" />
@@ -250,70 +251,79 @@
             </Menu>
             </DockPanel>
 
-            <ToolBarTray x:Name="Tray" IsLocked="True">
-                <ToolBar Band="0" BandIndex="0">
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Open}" Click="OnOpen" ToolTip="Open a PDF (Ctrl+O)" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Save}" Click="OnSave" ToolTip="Save (Ctrl+S)" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Print}" Click="OnPrint" ToolTip="Print (Ctrl+P)" />
-                    <Separator />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Undo}" Click="OnUndo" ToolTip="Undo (Ctrl+Z)" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Redo}" Click="OnRedo" ToolTip="Redo (Ctrl+Y)" />
-                    <Separator />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon ZoomOut}" Click="OnZoomOut" ToolTip="Zoom out" />
-                    <ComboBox x:Name="ZoomBox" Width="86" IsEditable="True" Margin="2,0" ToolTip="Zoom" SelectionChanged="OnZoomPicked" KeyDown="OnZoomKey" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon ZoomIn}" Click="OnZoomIn" ToolTip="Zoom in" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon FitWidth}" Click="OnFitWidth" ToolTip="Fit the page to the window width" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon FitPage}" Click="OnFitPage" ToolTip="Fit the whole page in the window" />
-                    <Separator />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Prev}" Click="OnPrevPage" ToolTip="Previous page" />
-                    <TextBox x:Name="PageBox" Width="46" TextAlignment="Center" Margin="2,0" ToolTip="Page number (press Enter to go)" KeyDown="OnPageBoxKey" />
-                    <TextBlock x:Name="PageOf" Text="/ 0" VerticalAlignment="Center" Margin="2,0,6,0" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Next}" Click="OnNextPage" ToolTip="Next page" />
-                    <Separator />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Find}" Click="OnFocusSearch" ToolTip="Search the document (Ctrl+F)" />
-                </ToolBar>
-                <ToolBar Band="1" BandIndex="0">
-                    <ToggleButton x:Name="ToolSelect" Style="{StaticResource TbToggle}" Content="{local:Icon Select}" Click="OnTool" Tag="Select" IsChecked="True" ToolTip="Select and copy text" />
-                    <Separator />
-                    <ToggleButton x:Name="ToolHighlight" Style="{StaticResource TbToggle}" Content="{local:Icon Highlight}" Click="OnTool" Tag="Highlight" ToolTip="Highlight: drag over text" />
-                    <ToggleButton x:Name="ToolUnderline" Style="{StaticResource TbToggle}" Content="{local:Icon Underline}" Click="OnTool" Tag="Underline" ToolTip="Underline: drag over text" />
-                    <ToggleButton x:Name="ToolStrike" Style="{StaticResource TbToggle}" Content="{local:Icon Strike}" Click="OnTool" Tag="Strikeout" ToolTip="Strike through: drag over text" />
-                    <ToggleButton x:Name="ToolNote" Style="{StaticResource TbToggle}" Content="{local:Icon Note}" Click="OnTool" Tag="Note" ToolTip="Note: click where the note should go" />
-                    <ToggleButton x:Name="ToolDraw" Style="{StaticResource TbToggle}" Content="{local:Icon Draw}" Click="OnTool" Tag="Draw" ToolTip="Draw freehand" />
-                    <ToggleButton x:Name="ToolRect" Style="{StaticResource TbToggle}" Content="{local:Icon Box}" Click="OnTool" Tag="Rectangle" ToolTip="Draw a rectangle" />
-                    <ToggleButton x:Name="ToolOval" Style="{StaticResource TbToggle}" Content="{local:Icon Oval}" Click="OnTool" Tag="Ellipse" ToolTip="Draw an oval" />
-                    <TextBlock Text="Color" VerticalAlignment="Center" Margin="10,0,4,0" />
-                    <ComboBox x:Name="ColorBox" Width="88" SelectionChanged="OnColor" SelectedIndex="0" ToolTip="Color for marks">
-                        <ComboBoxItem Content="Yellow" Tag="Yellow" />
-                        <ComboBoxItem Content="Green" Tag="Green" />
-                        <ComboBoxItem Content="Blue" Tag="Blue" />
-                        <ComboBoxItem Content="Red" Tag="Red" />
-                        <ComboBoxItem Content="Orange" Tag="Orange" />
-                        <ComboBoxItem Content="Pink" Tag="Pink" />
-                        <ComboBoxItem Content="Purple" Tag="Purple" />
-                    </ComboBox>
-                    <ComboBox x:Name="LineBox" Width="96" Margin="4,0,0,0" SelectionChanged="OnLineWidth" SelectedIndex="1" ToolTip="Line thickness for drawings, boxes and ovals">
-                        <ComboBoxItem Content="Thin" Tag="1" />
-                        <ComboBoxItem Content="Medium" Tag="2" />
-                        <ComboBoxItem Content="Thick" Tag="4" />
-                    </ComboBox>
-                    <Separator />
-                    <ToggleButton x:Name="ToolEdit" Style="{StaticResource TbToggle}" Content="{local:Icon EditContent}" Click="OnTool" Tag="EditContent" ToolTip="Edit text or pictures: click one to change it, drag to move it" />
-                    <ToggleButton x:Name="ToolText" Style="{StaticResource TbToggle}" Content="{local:Icon Text}" Click="OnTool" Tag="Text" ToolTip="Add text: click on the page where it should go" />
-                    <ToggleButton x:Name="ToolImage" Style="{StaticResource TbToggle}" Content="{local:Icon Picture}" Click="OnTool" Tag="Image" ToolTip="Add a picture: drag a box, then choose the picture" />
-                    <Separator />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Form}" Click="OnFillForm" ToolTip="Fill in the form fields of this document" />
-                    <ToggleButton x:Name="ToolField" Style="{StaticResource TbToggle}" Content="{local:Icon TextField}" Click="OnTool" Tag="TextField" ToolTip="Add a text field: drag a box" />
-                    <ToggleButton x:Name="ToolCheck" Style="{StaticResource TbToggle}" Content="{local:Icon CheckBox}" Click="OnTool" Tag="CheckField" ToolTip="Add a check box: drag a small box" />
-                    <Separator />
-                    <ToggleButton x:Name="ToolRedact" Style="{StaticResource TbToggle}" Content="{local:Icon Redact}" Click="OnTool" Tag="Redact" ToolTip="Redact: drag a box over what must be removed" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Apply}" Click="OnApplyRedactions" ToolTip="Apply redactions: permanently remove everything under the red boxes" />
-                    <Separator />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Rotate}" Click="OnRotateRight" ToolTip="Rotate the selected pages clockwise" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Delete}" Click="OnDeletePages" ToolTip="Delete the selected pages" />
-                    <Button Style="{StaticResource Tb}" Content="{local:Icon Sign}" Click="OnSign" ToolTip="Sign with a certificate on this computer" />
-                </ToolBar>
-            </ToolBarTray>
+            <Grid>
+                <ToolBarTray x:Name="Tray" IsLocked="True">
+                    <ToolBar Band="0" BandIndex="0">
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Open}" Click="OnOpen" ToolTip="Open a PDF (Ctrl+O)" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Save}" Click="OnSave" ToolTip="Save (Ctrl+S)" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Print}" Click="OnPrint" ToolTip="Print (Ctrl+P)" />
+                        <Separator />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Undo}" Click="OnUndo" ToolTip="Undo (Ctrl+Z)" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Redo}" Click="OnRedo" ToolTip="Redo (Ctrl+Y)" />
+                        <Separator />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon ZoomOut}" Click="OnZoomOut" ToolTip="Zoom out" />
+                        <ComboBox x:Name="ZoomBox" Width="86" IsEditable="True" Margin="2,0" ToolTip="Zoom" SelectionChanged="OnZoomPicked" KeyDown="OnZoomKey" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon ZoomIn}" Click="OnZoomIn" ToolTip="Zoom in" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon FitWidth}" Click="OnFitWidth" ToolTip="Fit the page to the window width" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon FitPage}" Click="OnFitPage" ToolTip="Fit the whole page in the window" />
+                        <Separator />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Prev}" Click="OnPrevPage" ToolTip="Previous page" />
+                        <TextBox x:Name="PageBox" Width="46" TextAlignment="Center" Margin="2,0" ToolTip="Page number (press Enter to go)" KeyDown="OnPageBoxKey" />
+                        <TextBlock x:Name="PageOf" Text="/ 0" VerticalAlignment="Center" Margin="2,0,6,0" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Next}" Click="OnNextPage" ToolTip="Next page" />
+                        <Separator />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Find}" Click="OnFocusSearch" ToolTip="Search the document (Ctrl+F)" />
+                    </ToolBar>
+                    <ToolBar Band="1" BandIndex="0">
+                        <ToggleButton x:Name="ToolSelect" Style="{StaticResource TbToggle}" Content="{local:Icon Select}" Click="OnTool" Tag="Select" IsChecked="True" ToolTip="Select and copy text" />
+                        <Separator />
+                        <ToggleButton x:Name="ToolHighlight" Style="{StaticResource TbToggle}" Content="{local:Icon Highlight}" Click="OnTool" Tag="Highlight" ToolTip="Highlight: drag over text" />
+                        <ToggleButton x:Name="ToolUnderline" Style="{StaticResource TbToggle}" Content="{local:Icon Underline}" Click="OnTool" Tag="Underline" ToolTip="Underline: drag over text" />
+                        <ToggleButton x:Name="ToolStrike" Style="{StaticResource TbToggle}" Content="{local:Icon Strike}" Click="OnTool" Tag="Strikeout" ToolTip="Strike through: drag over text" />
+                        <ToggleButton x:Name="ToolNote" Style="{StaticResource TbToggle}" Content="{local:Icon Note}" Click="OnTool" Tag="Note" ToolTip="Note: click where the note should go" />
+                        <ToggleButton x:Name="ToolDraw" Style="{StaticResource TbToggle}" Content="{local:Icon Draw}" Click="OnTool" Tag="Draw" ToolTip="Draw freehand" />
+                        <ToggleButton x:Name="ToolRect" Style="{StaticResource TbToggle}" Content="{local:Icon Box}" Click="OnTool" Tag="Rectangle" ToolTip="Draw a rectangle" />
+                        <ToggleButton x:Name="ToolOval" Style="{StaticResource TbToggle}" Content="{local:Icon Oval}" Click="OnTool" Tag="Ellipse" ToolTip="Draw an oval" />
+                        <TextBlock Text="Color" VerticalAlignment="Center" Margin="10,0,4,0" />
+                        <ComboBox x:Name="ColorBox" Width="88" SelectionChanged="OnColor" SelectedIndex="0" ToolTip="Color for marks">
+                            <ComboBoxItem Content="Yellow" Tag="Yellow" />
+                            <ComboBoxItem Content="Green" Tag="Green" />
+                            <ComboBoxItem Content="Blue" Tag="Blue" />
+                            <ComboBoxItem Content="Red" Tag="Red" />
+                            <ComboBoxItem Content="Orange" Tag="Orange" />
+                            <ComboBoxItem Content="Pink" Tag="Pink" />
+                            <ComboBoxItem Content="Purple" Tag="Purple" />
+                        </ComboBox>
+                        <ComboBox x:Name="LineBox" Width="112" Margin="4,0,0,0" SelectionChanged="OnLineWidth" SelectedIndex="1" ToolTip="Line thickness for drawings, boxes and ovals">
+                            <ComboBoxItem Content="Thin" Tag="1" />
+                            <ComboBoxItem Content="Medium" Tag="2" />
+                            <ComboBoxItem Content="Thick" Tag="4" />
+                        </ComboBox>
+                        <Separator />
+                        <ToggleButton x:Name="ToolEdit" Style="{StaticResource TbToggle}" Content="{local:Icon EditContent}" Click="OnTool" Tag="EditContent" ToolTip="Edit text or pictures: click one to change it, drag to move it" />
+                        <ToggleButton x:Name="ToolText" Style="{StaticResource TbToggle}" Content="{local:Icon Text}" Click="OnTool" Tag="Text" ToolTip="Add text: click on the page where it should go" />
+                        <ToggleButton x:Name="ToolImage" Style="{StaticResource TbToggle}" Content="{local:Icon Picture}" Click="OnTool" Tag="Image" ToolTip="Add a picture: drag a box, then choose the picture" />
+                        <Separator />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Form}" Click="OnFillForm" ToolTip="Fill in the form fields of this document" />
+                        <ToggleButton x:Name="ToolField" Style="{StaticResource TbToggle}" Content="{local:Icon TextField}" Click="OnTool" Tag="TextField" ToolTip="Add a text field: drag a box" />
+                        <ToggleButton x:Name="ToolCheck" Style="{StaticResource TbToggle}" Content="{local:Icon CheckBox}" Click="OnTool" Tag="CheckField" ToolTip="Add a check box: drag a small box" />
+                        <Separator />
+                        <ToggleButton x:Name="ToolRedact" Style="{StaticResource TbToggle}" Content="{local:Icon Redact}" Click="OnTool" Tag="Redact" ToolTip="Redact: drag a box over what must be removed" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Apply}" Click="OnApplyRedactions" ToolTip="Apply redactions: permanently remove everything under the red boxes" />
+                        <Separator />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Rotate}" Click="OnRotateRight" ToolTip="Rotate the selected pages clockwise" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Delete}" Click="OnDeletePages" ToolTip="Delete the selected pages" />
+                        <Button Style="{StaticResource Tb}" Content="{local:Icon Sign}" Click="OnSign" ToolTip="Sign with a certificate on this computer" />
+                    </ToolBar>
+                </ToolBarTray>
+                <Button x:Name="ShortcutsButton" Style="{StaticResource Tb}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,10,0"
+                        Click="OnShortcuts" ToolTip="See the keyboard shortcuts">
+                    <StackPanel Orientation="Horizontal">
+                        <ContentControl Content="{local:Icon Keyboard}" Margin="0,0,6,0" />
+                        <TextBlock Text="Keyboard Shortcuts" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
         </StackPanel>
 
         <!-- document area -->

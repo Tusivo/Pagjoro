@@ -8,7 +8,7 @@
 
 On that page, download **Pagjoro.exe** under **Assets** and double-click it. There is no installer. (Early previews are marked *Pre-release*; if the link above says there is no release, open the [releases page](https://github.com/Tusivo/Pagjoro/releases) and choose the newest one.)
 
-> **Status: v0.8.2-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
+> **Status: v0.8.3-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
 
 ![Pagjoro's start screen with its purple icon, an Open a PDF button, and the menus and toolbar above](docs/screenshots/welcome-light.png)
 *The start screen: open a PDF or drag one onto the window. Menus and a toolbar that stays put. (Light theme.)*

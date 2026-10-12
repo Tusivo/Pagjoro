@@ -29,6 +29,7 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 | Recent files | ✔ | |
 | Keyboard shortcuts (zoom, page, search, go to page) | ✔ | |
 | Glide-scrolling with the middle mouse button | ✔ | Move away from where you pressed; speed follows the distance |
+| Keyboard shortcuts window (button under the Theme drop-down, and in the Help menu) | ✔ | |
 | Rotate the view without changing the file | ✔ | Rotating pages themselves is in Phase 2 |
 | Read aloud and high-contrast viewing | ○ | Windows speech APIs |
 | Measure distance, area, perimeter | ○ | |

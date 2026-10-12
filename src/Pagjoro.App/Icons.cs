@@ -50,6 +50,7 @@ public sealed class IconExtension : MarkupExtension
         ["FitPage"]   = (Group.Blue, "M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15", null),
         ["Prev"]      = (Group.Blue, "M6 15 L12 9 L18 15", null),
         ["Next"]      = (Group.Blue, "M6 9 L12 15 L18 9", null),
+        ["Keyboard"]  = (Group.Slate, "M3 6 H21 V18 H3 Z M7 10 H7.01 M11 10 H11.01 M15 10 H15.01 M18 10 H18.01 M7 14 H17", null),
         ["Find"]      = (Group.Blue, "M10.5 3.5 A7 7 0 1 0 10.5 17.5 A7 7 0 1 0 10.5 3.5 Z M15.5 15.5 L21 21", null),
 
         ["Select"]    = (Group.Graphite, "M9 4 H15 M9 20 H15 M12 4 V20", null),

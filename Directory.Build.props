@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- One version for the whole solution. Bump it here (and the README status line) for each release. -->
-    <Version>0.8.2-alpha.1</Version>
-    <AssemblyVersion>0.8.2.0</AssemblyVersion>
-    <FileVersion>0.8.2.1</FileVersion>
-    <InformationalVersion>0.8.2-alpha.1</InformationalVersion>
+    <Version>0.8.3-alpha.1</Version>
+    <AssemblyVersion>0.8.3.0</AssemblyVersion>
+    <FileVersion>0.8.3.1</FileVersion>
+    <InformationalVersion>0.8.3-alpha.1</InformationalVersion>
 
     <Product>Pagjoro</Product>
     <Authors>Tusivo</Authors>

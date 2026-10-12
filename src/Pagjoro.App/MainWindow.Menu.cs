@@ -163,13 +163,6 @@ public partial class MainWindow
         body.Children.Add(pathRow);
         body.Children.Add(Para("Your documents are never copied here except the safety copy, and nothing is sent anywhere. The only network use is Check for Updates and, if you ask for it, a time stamp on a signature."));
 
-        body.Children.Add(Heading("Keyboard shortcuts"));
-        body.Children.Add(Para(
-            "Ctrl+O open     Ctrl+S save     Ctrl+Shift+S save as     Ctrl+P print     Ctrl+Z undo     Ctrl+Y redo\n" +
-            "Ctrl+F find     F3 / Shift+F3 next / previous match     Ctrl+G go to page     PgUp / PgDn page\n" +
-            "Ctrl+plus / minus zoom     Ctrl+0 fit page     Ctrl+1 actual size     Ctrl+2 fit width     Esc back to Select     Delete remove the chosen mark\n" +
-            "Middle button: press and move the mouse to glide that way (faster the further you move); click once to keep gliding, click again to stop"));
-
         body.Children.Add(Heading("Made with"));
         body.Children.Add(Para("PDFium (rendering and page editing, BSD-3-Clause), PDFsharp (document structure, MIT) and the text recognition built into Windows. The full list with licenses is in THIRD-PARTY-NOTICES.md in the source code."));
         body.Children.Add(Heading("Questions or ideas"));
