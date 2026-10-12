@@ -103,6 +103,8 @@ public partial class MainWindow : Window
         var has = doc is not null;
         Welcome.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
         View.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
+        // with nothing open the side panes have nothing to show, so the start screen takes the whole window and sits in its middle
+        SideTabs.Visibility = SideSplitter.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
     }
 
     void UpdateTitle()

@@ -357,7 +357,7 @@
                 </TabItem>
             </TabControl>
 
-            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+            <GridSplitter x:Name="SideSplitter" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
@@ -383,28 +383,29 @@
                     <local:DocumentView x:Name="View" />
                 </ScrollViewer>
 
-                <!-- shown until a file is open -->
-                <Border x:Name="Welcome" Grid.Row="1">
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
-                        <Image Source="Assets/Pagjoro.png" Width="112" Height="112" HorizontalAlignment="Center" Margin="0,0,0,14" RenderOptions.BitmapScalingMode="HighQuality" />
-                        <TextBlock Text="Pagjoro" FontSize="40" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                        <TextBlock Text="Free PDF tools that run on your own computer." Opacity="0.75" HorizontalAlignment="Center" Margin="0,4,0,24" />
-                        <Button Content="Open a PDF..." Padding="28,12" FontSize="16" HorizontalAlignment="Center" Click="OnOpen" />
-                        <TextBlock Text="Or drag a PDF file onto this window." Opacity="0.65" HorizontalAlignment="Center" Margin="0,14,0,0" />
-                        <TextBlock x:Name="RecentTitle" Text="Recent files" FontWeight="SemiBold" Margin="0,28,0,6" Visibility="Collapsed" />
-                        <ItemsControl x:Name="RecentList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Margin="0,2">
-                                        <Hyperlink NavigateUri="{Binding Path}" RequestNavigate="OnRecent"><Run Text="{Binding Name, Mode=OneWay}" /></Hyperlink>
-                                        <Run Text="{Binding Folder, Mode=OneWay}" Foreground="Gray" />
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
             </Grid>
+
+            <!-- shown until a file is open -->
+            <Border x:Name="Welcome" Grid.Column="0" Grid.ColumnSpan="3">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                    <Image Source="Assets/Pagjoro.png" Width="112" Height="112" HorizontalAlignment="Center" Margin="0,0,0,14" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <TextBlock Text="Pagjoro" FontSize="40" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    <TextBlock Text="Free PDF tools that run on your own computer." Opacity="0.75" HorizontalAlignment="Center" Margin="0,4,0,24" />
+                    <Button Content="Open a PDF..." Padding="28,12" FontSize="16" HorizontalAlignment="Center" Click="OnOpen" />
+                    <TextBlock Text="Or drag a PDF file onto this window." Opacity="0.65" HorizontalAlignment="Center" Margin="0,14,0,0" />
+                    <TextBlock x:Name="RecentTitle" Text="Recent files" FontWeight="SemiBold" Margin="0,28,0,6" Visibility="Collapsed" />
+                    <ItemsControl x:Name="RecentList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Margin="0,2">
+                                    <Hyperlink NavigateUri="{Binding Path}" RequestNavigate="OnRecent"><Run Text="{Binding Name, Mode=OneWay}" /></Hyperlink>
+                                    <Run Text="{Binding Folder, Mode=OneWay}" Foreground="Gray" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
         </Grid>
 
         <!-- status -->
