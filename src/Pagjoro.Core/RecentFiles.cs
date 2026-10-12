@@ -13,7 +13,7 @@ public sealed class RecentFiles
     public RecentFiles(string? folder = null, int max = 10)
     {
         this.max = max;
-        var dir = folder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Pagjoro");
+        var dir = folder ?? AppPaths.DataFolder;
         file = Path.Combine(dir, "recent.json");
         try
         {

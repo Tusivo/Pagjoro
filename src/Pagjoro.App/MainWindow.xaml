@@ -235,6 +235,7 @@
                     <MenuItem Header="Export as _CSV..." Click="OnExportCsv" />
                 </MenuItem>
                 <MenuItem Header="_Help">
+                    <MenuItem Header="Make Pagjoro the _Default PDF App..." Click="OnDefaultApp" />
                     <MenuItem Header="_Check for Updates..." Click="OnCheckUpdates" />
                     <MenuItem Header="_About Pagjoro" Click="OnAbout" />
                     <Separator />

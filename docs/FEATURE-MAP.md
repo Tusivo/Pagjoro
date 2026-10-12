@@ -14,6 +14,8 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 | Check for Updates, accepting only signed releases | ✔ | `Updater` in `Pagjoro.Core`; offline-testable |
 | Third-party notices | ✔ | `THIRD-PARTY-NOTICES.md` |
 | Light, Dark and Night themes, remembered | ✔ | |
+| Portable: settings kept in a `Pagjoro-Data` folder beside the program | ✔ | Falls back to the account's own folder when that cannot be written |
+| Offer Pagjoro to Windows as a PDF program, with steps to choose it | ✔ | Windows does not allow a program to make itself the default |
 
 ## Phase 1: View and read
 | Feature | State | Notes |

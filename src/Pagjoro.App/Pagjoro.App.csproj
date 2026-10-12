@@ -14,8 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pagjoro.Core\Pagjoro.Core.csproj" />
-    <!-- the README is shown on the About page -->
-    <EmbeddedResource Include="..\..\README.md" LogicalName="README.md" />
     <Resource Include="Assets\Pagjoro.ico" />
     <Resource Include="Assets\Pagjoro.png" />
   </ItemGroup>

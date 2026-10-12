@@ -8,7 +8,7 @@
 
 On that page, download **Pagjoro.exe** under **Assets** and double-click it. There is no installer. (Early previews are marked *Pre-release*; if the link above says there is no release, open the [releases page](https://github.com/Tusivo/Pagjoro/releases) and choose the newest one.)
 
-> **Status: v0.7.2-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
+> **Status: v0.8.0-alpha.1, an early preview.** Reading, marking up, organizing, forms, protecting, redacting and signing work, and more is on the way (see the [roadmap](#roadmap)). It is **not ready for documents you cannot afford to lose**, so keep a copy of anything you work on.
 
 ![Pagjoro's start screen with its purple icon, an Open a PDF button, and the menus and toolbar above](docs/screenshots/welcome-light.png)
 *The start screen: open a PDF or drag one onto the window. Menus and a toolbar that stays put. (Light theme.)*
@@ -71,6 +71,10 @@ Each phase ends with something you can use.
 ## Getting Pagjoro
 
 Download **Pagjoro.exe** from the [releases page](https://github.com/Tusivo/Pagjoro/releases/latest) and run it. There is no installer. Releases are still early previews, so they are marked *Pre-release*. Windows may warn about an unrecognized app the first time, because the program is not code-signed with a Windows certificate yet (choose *More info*, then *Run anyway*).
+
+## Where Pagjoro keeps its files
+
+Like Ledjoro, Pagjoro is portable. It keeps its settings, the recent files list and a safety copy of unsaved work in a folder called `Pagjoro-Data` next to `Pagjoro.exe`, so copying the program together with that folder moves everything. If the program sits somewhere it cannot write (a protected folder or a read-only drive) it uses `%APPDATA%\Pagjoro` instead. Nothing is written to the registry unless you choose **Help, Make Pagjoro the Default PDF App**, which adds entries for your own account only and can be removed again.
 
 ## Updates and signatures
 

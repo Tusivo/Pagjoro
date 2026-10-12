@@ -9,7 +9,7 @@ namespace Pagjoro.App;
 
 public partial class MainWindow
 {
-    static readonly string RecoveryDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Pagjoro", "recovery");
+    static readonly string RecoveryDir = Path.Combine(Pagjoro.Core.AppPaths.DataFolder, "recovery");
     static string RecoveryFile => Path.Combine(RecoveryDir, "unsaved.pdf");
     static string RecoveryNote => Path.Combine(RecoveryDir, "unsaved.json");
     DispatcherTimer? recoveryTimer;

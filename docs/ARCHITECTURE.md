@@ -43,6 +43,7 @@ Every one of these was reviewed against `LEGAL.md` and is listed in `THIRD-PARTY
 4. **One version.** `Directory.Build.props` holds the version; nothing else repeats it.
 5. **Original expression.** Names, wording, colors and icons are Pagjoro's own (see `LEGAL.md`).
 6. **Nothing leaves the computer unasked.** The only network traffic is Check for Updates and an optional time stamp request, both started by the person.
+7. **Files stay beside the program.** `AppPaths` is the one place that decides where settings live (`Pagjoro-Data` next to the exe, else the account's folder). The registry is only written by an explicit "Make Pagjoro the Default PDF App" request, under the person's own account.
 
 ## Packaging
 `scripts/build.ps1` produces one self-contained `dist\Pagjoro.exe` (no installer, no separate .NET install) and its SHA-256. Releases are signed with `scripts/release-sign.js` (see `docs/RELEASING.md`).

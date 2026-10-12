@@ -42,3 +42,6 @@ samples-private/
 # Windows
 Thumbs.db
 desktop.ini
+
+# Pagjoro keeps its settings next to the program while it runs
+Pagjoro-Data/

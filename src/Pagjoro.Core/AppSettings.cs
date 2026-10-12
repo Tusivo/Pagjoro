@@ -12,7 +12,7 @@ public sealed class AppSettings
 
     public AppSettings(string? folder = null)
     {
-        var dir = folder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Pagjoro");
+        var dir = folder ?? AppPaths.DataFolder;
         file = Path.Combine(dir, "settings.json");
         try
         {

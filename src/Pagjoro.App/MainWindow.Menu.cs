@@ -114,32 +114,68 @@ public partial class MainWindow
     {
         var w = new Window
         {
-            Title = "About Pagjoro", Width = 760, Height = 600, Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false,
+            Title = "About Pagjoro", Width = 720, Height = 640, MinWidth = 560, MinHeight = 420, Owner = this,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false,
         };
-        var dock = new DockPanel { Margin = new Thickness(24) };
-        var head = new StackPanel { Margin = new Thickness(0, 0, 0, 12) };
-        head.Children.Add(new TextBlock { Text = AppInfo.Name, FontSize = 30, FontWeight = FontWeights.SemiBold });
-        head.Children.Add(new TextBlock { Text = "Version " + AppInfo.Version + (AppInfo.IsPreRelease ? "  (early development: not ready for real documents yet)" : ""), Opacity = 0.8 });
-        head.Children.Add(new TextBlock { Text = "Licence: " + AppInfo.License, Opacity = 0.8, Margin = new Thickness(0, 2, 0, 0) });
+        var dock = new DockPanel { Margin = new Thickness(26, 22, 26, 18) };
+
+        // the name, version and licence
+        var head = new Grid { Margin = new Thickness(0, 0, 0, 14) };
+        head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        head.ColumnDefinitions.Add(new ColumnDefinition());
+        head.Children.Add(new System.Windows.Controls.Image
+        {
+            Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Pagjoro.png")),
+            Width = 72, Height = 72, Margin = new Thickness(0, 0, 18, 0),
+        });
+        var titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        titles.Children.Add(new TextBlock { Text = AppInfo.Name, FontSize = 30, FontWeight = FontWeights.SemiBold });
+        titles.Children.Add(new TextBlock { Text = "Version " + AppInfo.Version + (AppInfo.IsPreRelease ? "   (alpha: keep a copy of any file you work on)" : ""), Opacity = 0.8 });
+        titles.Children.Add(new TextBlock { Text = "Licence: " + AppInfo.License, Opacity = 0.8, Margin = new Thickness(0, 2, 0, 0) });
+        Grid.SetColumn(titles, 1); head.Children.Add(titles);
         DockPanel.SetDock(head, Dock.Top); dock.Children.Add(head);
-        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
+
+        // the buttons
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
         Button Link(string text, string url) { var b = new Button { Content = text, Padding = new Thickness(12, 5, 12, 5), Margin = new Thickness(6, 0, 0, 0) }; b.Click += (_, _) => OpenUrl(url); return b; }
         buttons.Children.Add(Link("Source Code", AppInfo.Repository));
         buttons.Children.Add(Link("Website", AppInfo.Website));
+        buttons.Children.Add(Link("Support the Project", "https://buymeacoffee.com/tusivo"));
         var close = new Button { Content = "Close", IsDefault = true, IsCancel = true, Padding = new Thickness(16, 5, 16, 5), Margin = new Thickness(6, 0, 0, 0) };
         buttons.Children.Add(close);
         DockPanel.SetDock(buttons, Dock.Bottom); dock.Children.Add(buttons);
-        dock.Children.Add(new TextBox { Text = ReadReadme(), IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+
+        // the text
+        var body = new StackPanel { Margin = new Thickness(0, 0, 18, 0) };
+        TextBlock Heading(string t) => new() { Text = t, FontSize = 16, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 16, 0, 4) };
+        TextBlock Para(string t) => new() { Text = t, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 4) };
+        body.Children.Add(Para("Free, open-source PDF tools that run on your own computer: read, mark up, edit, fill forms, merge, split, redact, protect, sign and convert PDF files, with no subscription, no account and nothing uploaded."));
+        body.Children.Add(Heading("Where Pagjoro keeps its files"));
+        body.Children.Add(Para(Pagjoro.Core.AppPaths.IsPortable
+            ? "Beside the program, in a folder called Pagjoro-Data. It holds your settings, the recent files list and a safety copy of unsaved work, so copying Pagjoro.exe together with that folder moves everything:"
+            : "In this folder (Pagjoro could not write beside the program, so it uses your account's own folder):"));
+        var pathRow = new DockPanel();
+        var open = new Button { Content = "Open Folder", Padding = new Thickness(10, 3, 10, 3), Margin = new Thickness(8, 0, 0, 0) };
+        DockPanel.SetDock(open, Dock.Right);
+        open.Click += (_, _) => OpenFolder(Pagjoro.Core.AppPaths.DataFolder);
+        pathRow.Children.Add(open);
+        pathRow.Children.Add(new TextBox { Text = Pagjoro.Core.AppPaths.DataFolder, IsReadOnly = true });
+        body.Children.Add(pathRow);
+        body.Children.Add(Para("Your documents are never copied here except the safety copy, and nothing is sent anywhere. The only network use is Check for Updates and, if you ask for it, a time stamp on a signature."));
+
+        body.Children.Add(Heading("Keyboard shortcuts"));
+        body.Children.Add(Para(
+            "Ctrl+O open     Ctrl+S save     Ctrl+Shift+S save as     Ctrl+P print     Ctrl+Z undo     Ctrl+Y redo\n" +
+            "Ctrl+F find     F3 / Shift+F3 next / previous match     Ctrl+G go to page     PgUp / PgDn page\n" +
+            "Ctrl+plus / minus zoom     Ctrl+0 fit page     Ctrl+1 actual size     Ctrl+2 fit width     Esc back to Select     Delete remove the chosen mark"));
+
+        body.Children.Add(Heading("Made with"));
+        body.Children.Add(Para("PDFium (rendering and page editing, BSD-3-Clause), PDFsharp (document structure, MIT) and the text recognition built into Windows. The full list with licences is in THIRD-PARTY-NOTICES.md in the source code."));
+        body.Children.Add(Heading("Questions or ideas"));
+        body.Children.Add(Para("Write to " + AppInfo.ContactEmail + " or open an issue on GitHub. Pagjoro is a Tusivo project. PDF is the name of an open ISO standard (ISO 32000)."));
+        dock.Children.Add(new ScrollViewer { Content = body, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         w.Content = dock;
         w.ShowDialog();
-    }
-
-    static string ReadReadme()
-    {
-        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("README.md");
-        if (stream is null) return "The README is not included in this build.";
-        using var reader = new StreamReader(stream);
-        return PlainText.FromMarkdown(reader.ReadToEnd());
     }
 
     async void OnCheckUpdates(object sender, RoutedEventArgs e)
