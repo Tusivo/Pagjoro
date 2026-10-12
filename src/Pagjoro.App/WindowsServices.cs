@@ -157,13 +157,13 @@ static class Scanner
         var type = Type.GetTypeFromProgID("WIA.CommonDialog")
             ?? throw new InvalidOperationException("Windows image acquisition is not available on this computer.");
         dynamic dialog = Activator.CreateInstance(type)!;
-        // device type 1 = scanner, intent 1 = colour, bias 0x20000 = maximise quality, JPEG format
+        // device type 1 = scanner, intent 1 = color, bias 0x20000 = maximize quality, JPEG format
         dynamic? image;
         try { image = dialog.ShowAcquireImage(1, 1, 0x20000, "{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}", false, true, false); }
         catch (System.Runtime.InteropServices.COMException ex) when ((uint)ex.HResult == 0x80210015)
         { throw new InvalidOperationException("No scanner was found. Connect and switch on a scanner, then try again."); }
         catch (System.Runtime.InteropServices.COMException ex) when ((uint)ex.HResult == 0x80210064 || (uint)ex.HResult == 0x80210001)
-        { return null; }   // cancelled
+        { return null; }   // canceled
         if (image is null) return null;
         var path = Path.Combine(Path.GetTempPath(), "pagjoro-scan-" + Guid.NewGuid().ToString("N") + ".jpg");
         image.SaveFile(path);

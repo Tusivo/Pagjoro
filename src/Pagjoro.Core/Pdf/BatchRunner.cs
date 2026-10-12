@@ -24,10 +24,10 @@ public static class BatchRunner
     public static readonly IReadOnlyList<BatchAction> Actions =
     [
         new("watermark", "Add a watermark", "Large light words across each page.",
-            [new("text", "Words", "CONFIDENTIAL"), new("size", "Letter size", "64"), new("colour", "Colour", "Grey", ["Grey", "Red", "Blue"]), new("angle", "Direction", "Diagonal", ["Diagonal", "Straight across"])]),
+            [new("text", "Words", "CONFIDENTIAL"), new("size", "Letter size", "64"), new("color", "Color", "Gray", ["Gray", "Red", "Blue"]), new("angle", "Direction", "Diagonal", ["Diagonal", "Straight across"])]),
         new("headerfooter", "Add a header or footer", "{page}, {pages}, {date} and {file} are filled in for each page.",
-            [new("topleft", "Top left", ""), new("topcenter", "Top centre", ""), new("topright", "Top right", ""),
-             new("bottomleft", "Bottom left", ""), new("bottomcenter", "Bottom centre", "Page {page} of {pages}"), new("bottomright", "Bottom right", ""), new("size", "Letter size", "10")]),
+            [new("topleft", "Top left", ""), new("topcenter", "Top center", ""), new("topright", "Top right", ""),
+             new("bottomleft", "Bottom left", ""), new("bottomcenter", "Bottom center", "Page {page} of {pages}"), new("bottomright", "Bottom right", ""), new("size", "Letter size", "10")]),
         new("bates", "Add Bates numbers", "A running number on every page.",
             [new("prefix", "Before the number", ""), new("start", "First number", "1"), new("digits", "Digits", "6"), new("suffix", "After the number", "")]),
         new("rotate", "Turn all pages", "Turns every page the same way.", [new("degrees", "Degrees clockwise", "90", ["90", "180", "270"])]),
@@ -59,9 +59,10 @@ public static class BatchRunner
             case "watermark":
                 {
                     using var f = PdfFile.FromBytes(pdf);
-                    var colour = step.Get("colour", "Grey") switch { "Red" => new PdfColor(200, 30, 30), "Blue" => new PdfColor(30, 80, 200), _ => new PdfColor(110, 110, 110) };
+                    // sequences saved by earlier versions spelled the key "colour"
+                    var color = step.Get("color", step.Get("colour", "Gray")) switch { "Red" => new PdfColor(200, 30, 30), "Blue" => new PdfColor(30, 80, 200), _ => new PdfColor(110, 110, 110) };
                     var angle = step.Get("angle", "Diagonal") == "Straight across" ? 0 : 45;
-                    PageDecorations.Watermark(f, Enumerable.Range(0, f.PageCount), new WatermarkOptions(step.Get("text", "CONFIDENTIAL"), step.GetDouble("size", 64), colour, angle));
+                    PageDecorations.Watermark(f, Enumerable.Range(0, f.PageCount), new WatermarkOptions(step.Get("text", "CONFIDENTIAL"), step.GetDouble("size", 64), color, angle));
                     return f.ToBytes();
                 }
             case "headerfooter":

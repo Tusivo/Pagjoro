@@ -107,7 +107,7 @@
             <DockPanel x:Name="MenuRow" LastChildFill="True">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,10,2">
                     <TextBlock Text="Theme" VerticalAlignment="Center" Margin="0,0,6,0" Opacity="0.8" />
-                    <ComboBox x:Name="ThemeBox" Width="92" Height="22" MinHeight="0" Padding="8,0" VerticalContentAlignment="Center" ToolTip="Colours of the window" SelectionChanged="OnThemePicked">
+                    <ComboBox x:Name="ThemeBox" Width="92" Height="22" MinHeight="0" Padding="8,0" VerticalContentAlignment="Center" ToolTip="Colors of the window" SelectionChanged="OnThemePicked">
                         <ComboBoxItem Content="Dark" Tag="dark" />
                         <ComboBoxItem Content="Light" Tag="light" />
                         <ComboBoxItem Content="Night" Tag="night" />
@@ -282,8 +282,8 @@
                     <ToggleButton x:Name="ToolDraw" Style="{StaticResource TbToggle}" Content="{local:Icon Draw}" Click="OnTool" Tag="Draw" ToolTip="Draw freehand" />
                     <ToggleButton x:Name="ToolRect" Style="{StaticResource TbToggle}" Content="{local:Icon Box}" Click="OnTool" Tag="Rectangle" ToolTip="Draw a rectangle" />
                     <ToggleButton x:Name="ToolOval" Style="{StaticResource TbToggle}" Content="{local:Icon Oval}" Click="OnTool" Tag="Ellipse" ToolTip="Draw an oval" />
-                    <TextBlock Text="Colour" VerticalAlignment="Center" Margin="10,0,4,0" />
-                    <ComboBox x:Name="ColorBox" Width="88" SelectionChanged="OnColor" SelectedIndex="0" ToolTip="Colour for marks">
+                    <TextBlock Text="Color" VerticalAlignment="Center" Margin="10,0,4,0" />
+                    <ComboBox x:Name="ColorBox" Width="88" SelectionChanged="OnColor" SelectedIndex="0" ToolTip="Color for marks">
                         <ComboBoxItem Content="Yellow" Tag="Yellow" />
                         <ComboBoxItem Content="Green" Tag="Green" />
                         <ComboBoxItem Content="Blue" Tag="Blue" />
@@ -353,7 +353,7 @@
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Bottom" Margin="6">
                             <Button Content="Edit Words..." Click="OnEditMark" Margin="0,0,0,4" ToolTip="Change the text of the chosen mark" />
-                            <Button Content="Use Toolbar Colour" Click="OnRecolorMark" Margin="0,0,0,4" ToolTip="Give the chosen mark the colour picked in the toolbar" />
+                            <Button Content="Use Toolbar Color" Click="OnRecolorMark" Margin="0,0,0,4" ToolTip="Give the chosen mark the color picked in the toolbar" />
                             <Button Content="Remove Selected Mark" Click="OnRemoveMark" />
                         </StackPanel>
                         <ListBox x:Name="MarksList" SelectionChanged="OnMarkSelected">

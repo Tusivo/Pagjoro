@@ -75,6 +75,7 @@ public partial class MainWindow : Window
         VersionStatus.Text = "Pagjoro " + AppInfo.Version;
         Thumbs.ItemsSource = thumbs;
         View.Attach(Scroller);
+        Deactivated += (_, _) => View.StopGlide();
         View.ViewChanged += OnViewChanged;
         View.BeforeEdit += PushUndo;
         View.DocumentEdited += () => { AfterEdit(); RefreshMarks(); };

@@ -76,11 +76,12 @@ public partial class MainWindow
         try { doc.SetAnnotationColor(mk.Page, mk.Index, View.MarkColor); }
         catch (PdfException ex) { undo.RemoveAt(undo.Count - 1); Dialogs.Info(this, "Pagjoro", ex.Message, error: true); return; }
         View.InvalidatePage(mk.Page); AfterEdit();
-        MessageStatus.Text = "Colour changed to the one chosen in the toolbar.";
+        MessageStatus.Text = "Color changed to the one chosen in the toolbar.";
     }
 
     void OnWindowKeyDown(object sender, KeyEventArgs e)
     {
+        if (View.IsGliding && e.Key == Key.Escape) { View.StopGlide(); e.Handled = true; return; }
         if (doc is null) return;
         var typing = Keyboard.FocusedElement is System.Windows.Controls.TextBox or System.Windows.Controls.PasswordBox or System.Windows.Controls.ComboBox;
         var ctrl = (Keyboard.Modifiers & ModifierKeys.Control) != 0;

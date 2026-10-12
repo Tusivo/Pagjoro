@@ -80,7 +80,7 @@ public static class DocumentChecks
         results.Add(IsEncrypted(pdf)
             ? new(CheckStatus.Warning, "Permissions", "The document is encrypted. Its restrictions may block assistive software from extracting the text.")
             : new(CheckStatus.Passed, "Permissions", "Nothing in the permissions prevents assistive software from reading the text."));
-        results.Add(new(CheckStatus.Info, "Not checked", "Pagjoro cannot yet check that pictures have alternative text, that colours have enough contrast, or that tables are marked up. A full check with a dedicated accessibility tool is still advised for official documents."));
+        results.Add(new(CheckStatus.Info, "Not checked", "Pagjoro cannot yet check that pictures have alternative text, that colors have enough contrast, or that tables are marked up. A full check with a dedicated accessibility tool is still advised for official documents."));
         return results;
     }
 

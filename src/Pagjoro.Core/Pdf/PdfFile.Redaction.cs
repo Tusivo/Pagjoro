@@ -161,7 +161,7 @@ public sealed partial class PdfFile
             keep[k] = !boxes.Any(x => Overlaps(x, cl, cr, cb, ct));
         }
 
-        // the object's look: size and colour from the object; a built-in font of the same family and weight
+        // the object's look: size and color from the object; a built-in font of the same family and weight
         float fontSize = 0;
         fpdf_edit.FPDFTextObjGetFontSize(obj, ref fontSize);
         var measured = fpdf_text.FPDFTextGetFontSize(textPage, start);
@@ -207,7 +207,7 @@ public sealed partial class PdfFile
         if (w <= 0 || h <= 0) return box.Left <= l && l <= box.Right && box.Bottom <= b && b <= box.Top;
         var ox = Math.Min(box.Right, r) - Math.Max(box.Left, l);
         var oy = Math.Min(box.Top, t) - Math.Max(box.Bottom, b);
-        // a letter counts as covered when a fifth of it lies inside the area (so neighbours that merely touch are kept)
+        // a letter counts as covered when a fifth of it lies inside the area (so neighbors that merely touch are kept)
         return ox > 0 && oy > 0 && ox / w >= 0.2 && oy / h >= 0.2;
     }
 

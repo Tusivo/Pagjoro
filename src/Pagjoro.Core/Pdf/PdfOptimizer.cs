@@ -8,7 +8,7 @@ namespace Pagjoro.Core.Pdf;
 /// <summary>Turns pixels into JPEG data and back. The window supplies this (Core has no picture codecs of its own).</summary>
 public interface IImageRecoder
 {
-    /// <summary>Decodes JPEG data to raw pixels: width, height, channels (1 grey, 3 RGB) and the bytes row by row.</summary>
+    /// <summary>Decodes JPEG data to raw pixels: width, height, channels (1 gray, 3 RGB) and the bytes row by row.</summary>
     (int Width, int Height, int Channels, byte[] Pixels)? DecodeJpeg(byte[] jpeg);
 
     /// <summary>Encodes raw pixels (1 or 3 channels, 8 bits each) as a JPEG at the given quality (1 to 100).</summary>
@@ -67,7 +67,7 @@ public static class PdfOptimizer
                     }
                     catch (InvalidDataException) { continue; }
                     if (pixels.Length != w * h * channels) continue;
-                    // only photographic pictures gain from JPEG; flat graphics (few colours) are better left lossless
+                    // only photographic pictures gain from JPEG; flat graphics (few colors) are better left lossless
                     if (LooksFlat(pixels, channels)) continue;
                     (pixels, pw, ph) = Scale(pixels, w, h, channels, options.MaxDpi);
                     jpeg = recoder.EncodeJpeg(pixels, pw, ph, channels, options.JpegQuality);

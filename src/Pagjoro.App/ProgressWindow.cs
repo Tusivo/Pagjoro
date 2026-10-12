@@ -9,7 +9,7 @@ public static class ProgressWindow
 {
     /// <summary>
     /// Runs <paramref name="step"/> for each of <paramref name="total"/> items, in order, showing the text it returns. Returns how many steps
-    /// completed; fewer than <paramref name="total"/> means it was cancelled or <paramref name="step"/> threw (the exception is rethrown after
+    /// completed; fewer than <paramref name="total"/> means it was canceled or <paramref name="step"/> threw (the exception is rethrown after
     /// the window closes).
     /// </summary>
     public static async Task<int> RunAsync(Window? owner, string title, int total, Func<int, CancellationToken, Task<string>> step)

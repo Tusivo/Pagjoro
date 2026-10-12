@@ -7,7 +7,7 @@ namespace Pagjoro.App;
 
 /// <summary>
 /// Where and how big the window opens, the same way Ledjoro does it: a window rather than full screen, but roomy: 1920 by 1080 pixels
-/// on the screen the mouse is on, centred, and never larger than that screen's usable area.
+/// on the screen the mouse is on, centered, and never larger than that screen's usable area.
 /// </summary>
 static class StartupBounds
 {
@@ -54,7 +54,7 @@ static class StartupBounds
         window.Top = (work.Y + (work.Height - h) / 2) / sy;
 
         // Windows adds invisible resize borders around a window, so the visible frame comes out a little smaller than asked for.
-        // Once the window exists, grow it by exactly that much so the visible window is the size that was meant (and recentre it).
+        // Once the window exists, grow it by exactly that much so the visible window is the size that was meant (and recenter it).
         if (adjustFrame) window.SourceInitialized += (_, _) =>
         {
             try

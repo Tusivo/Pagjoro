@@ -9,7 +9,7 @@ namespace Pagjoro.App;
 
 public partial class MainWindow
 {
-    /// <summary>Edit the settings of one step in a sequence. Returns null when cancelled.</summary>
+    /// <summary>Edit the settings of one step in a sequence. Returns null when canceled.</summary>
     BatchStep? EditStep(Window owner, BatchAction action, BatchStep? existing)
     {
         var f = new FormBuilder(owner, action.Title, 520);

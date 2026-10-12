@@ -22,7 +22,7 @@ public class FeatureTests
         using var f = PdfFileTests.Sample(1);
         f.RotatePage(0, 90);
         PageDecorations.HeaderFooter(f, [0], new HeaderFooterOptions(BottomCenter: "FOOT"));
-        // the text must be visible on the turned page: render it and find dark pixels near the bottom-centre of the picture
+        // the text must be visible on the turned page: render it and find dark pixels near the bottom-center of the picture
         var img = f.Render(0, 792, 612);
         var dark = 0;
         for (var y = 612 - 60; y < 612; y++)

@@ -9,7 +9,7 @@ public sealed record StampPreset(string Name, string Text, PdfColor Color);
 
 public sealed partial class PdfFile
 {
-    /// <summary>What the person chose to stamp: the words, a colour, and whether today's date goes under them.</summary>
+    /// <summary>What the person chose to stamp: the words, a color, and whether today's date goes under them.</summary>
     public sealed record StampChoice(string Text, PdfColor Color, bool WithDate);
 
     /// <summary>The ready-made stamps offered in the stamp tool.</summary>

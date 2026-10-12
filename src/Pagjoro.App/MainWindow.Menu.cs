@@ -119,7 +119,7 @@ public partial class MainWindow
         };
         var dock = new DockPanel { Margin = new Thickness(26, 22, 26, 18) };
 
-        // the name, version and licence
+        // the name, version and license
         var head = new Grid { Margin = new Thickness(0, 0, 0, 14) };
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         head.ColumnDefinitions.Add(new ColumnDefinition());
@@ -131,7 +131,7 @@ public partial class MainWindow
         var titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         titles.Children.Add(new TextBlock { Text = AppInfo.Name, FontSize = 30, FontWeight = FontWeights.SemiBold });
         titles.Children.Add(new TextBlock { Text = "Version " + AppInfo.Version + (AppInfo.IsPreRelease ? "   (alpha: keep a copy of any file you work on)" : ""), Opacity = 0.8 });
-        titles.Children.Add(new TextBlock { Text = "Licence: " + AppInfo.License, Opacity = 0.8, Margin = new Thickness(0, 2, 0, 0) });
+        titles.Children.Add(new TextBlock { Text = "License: " + AppInfo.License, Opacity = 0.8, Margin = new Thickness(0, 2, 0, 0) });
         Grid.SetColumn(titles, 1); head.Children.Add(titles);
         DockPanel.SetDock(head, Dock.Top); dock.Children.Add(head);
 
@@ -167,10 +167,11 @@ public partial class MainWindow
         body.Children.Add(Para(
             "Ctrl+O open     Ctrl+S save     Ctrl+Shift+S save as     Ctrl+P print     Ctrl+Z undo     Ctrl+Y redo\n" +
             "Ctrl+F find     F3 / Shift+F3 next / previous match     Ctrl+G go to page     PgUp / PgDn page\n" +
-            "Ctrl+plus / minus zoom     Ctrl+0 fit page     Ctrl+1 actual size     Ctrl+2 fit width     Esc back to Select     Delete remove the chosen mark"));
+            "Ctrl+plus / minus zoom     Ctrl+0 fit page     Ctrl+1 actual size     Ctrl+2 fit width     Esc back to Select     Delete remove the chosen mark\n" +
+            "Middle button: press and move the mouse to glide that way (faster the further you move); click once to keep gliding, click again to stop"));
 
         body.Children.Add(Heading("Made with"));
-        body.Children.Add(Para("PDFium (rendering and page editing, BSD-3-Clause), PDFsharp (document structure, MIT) and the text recognition built into Windows. The full list with licences is in THIRD-PARTY-NOTICES.md in the source code."));
+        body.Children.Add(Para("PDFium (rendering and page editing, BSD-3-Clause), PDFsharp (document structure, MIT) and the text recognition built into Windows. The full list with licenses is in THIRD-PARTY-NOTICES.md in the source code."));
         body.Children.Add(Heading("Questions or ideas"));
         body.Children.Add(Para("Write to " + AppInfo.ContactEmail + " or open an issue on GitHub. Pagjoro is a Tusivo project. PDF is the name of an open ISO standard (ISO 32000)."));
         dock.Children.Add(new ScrollViewer { Content = body, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });

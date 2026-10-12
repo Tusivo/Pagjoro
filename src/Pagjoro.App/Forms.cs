@@ -88,7 +88,7 @@ public static class Forms
         var text = f.Text("Words", "DRAFT");
         var size = f.Text("Letter size (points)", "72", 100);
         var angle = f.Choice("Direction", ["Diagonal (45 degrees)", "Straight across", "Diagonal the other way"]);
-        var colour = f.Choice("Colour", ["Grey", "Red", "Blue"]);
+        var color = f.Choice("Color", ["Gray", "Red", "Blue"]);
         var pages = f.Text("Pages (leave empty for all)", "");
         WatermarkChoice? result = null;
         if (!f.Show("Add Watermark", () =>
@@ -97,7 +97,7 @@ public static class Forms
             if (!double.TryParse(size.Text, out var s) || s < 8 || s > 400) { Dialogs.Info(f.Window, "Watermark", "Type a letter size between 8 and 400."); return false; }
             try { if (pages.Text.Trim().Length > 0) PageRanges.Parse(pages.Text, pageCount); }
             catch (FormatException ex) { Dialogs.Info(f.Window, "Watermark", ex.Message); return false; }
-            var col = colour.SelectedIndex switch { 1 => new PdfColor(200, 30, 30), 2 => new PdfColor(30, 80, 200), _ => new PdfColor(110, 110, 110) };
+            var col = color.SelectedIndex switch { 1 => new PdfColor(200, 30, 30), 2 => new PdfColor(30, 80, 200), _ => new PdfColor(110, 110, 110) };
             result = new WatermarkChoice(new Pagjoro.Core.Pdf.WatermarkOptions(text.Text.Trim(), s, col, angle.SelectedIndex switch { 1 => 0, 2 => -45, _ => 45 }), pages.Text.Trim());
             return true;
         })) return null;
@@ -111,9 +111,9 @@ public static class Forms
         var f = new FormBuilder(owner, pageNumbersOnly ? "Page Numbers" : "Header and Footer", 560);
         f.Note("Type what should appear. {page} is the page number, {pages} the number of pages, {date} today's date and {file} the file name.");
         TextBox? tl = null, tc = null, tr = null;
-        if (!pageNumbersOnly) { tl = f.Text("Top left"); tc = f.Text("Top centre"); tr = f.Text("Top right"); }
+        if (!pageNumbersOnly) { tl = f.Text("Top left"); tc = f.Text("Top center"); tr = f.Text("Top right"); }
         var bl = f.Text("Bottom left");
-        var bc = f.Text("Bottom centre", pageNumbersOnly ? "Page {page} of {pages}" : "");
+        var bc = f.Text("Bottom center", pageNumbersOnly ? "Page {page} of {pages}" : "");
         var br = f.Text("Bottom right");
         var size = f.Text("Letter size (points)", "10", 100);
         var pages = f.Text("Pages (leave empty for all)");
@@ -139,7 +139,7 @@ public static class Forms
         var start = f.Text("First number", "1", 120);
         var digits = f.Text("Number of digits", "6", 120);
         var suffix = f.Text("Letters after the number", "");
-        var corner = f.Choice("Where", ["Bottom right", "Bottom centre", "Bottom left", "Top right", "Top centre", "Top left"]);
+        var corner = f.Choice("Where", ["Bottom right", "Bottom center", "Bottom left", "Top right", "Top center", "Top left"]);
         BatesOptions? result = null;
         if (!f.Show("Add Numbers", () =>
         {
@@ -258,10 +258,10 @@ public static class Forms
         _ => bold ? (italic ? "Helvetica-BoldOblique" : "Helvetica-Bold") : (italic ? "Helvetica-Oblique" : "Helvetica"),
     };
 
-    static readonly (string Name, PdfColor? Color)[] TextColours =
-        [("Keep the current colour", null), ("Black", PdfColor.Black), ("Dark grey", new PdfColor(80, 80, 80)), ("Red", PdfColor.Red), ("Blue", PdfColor.Blue), ("Green", PdfColor.Green), ("White", PdfColor.White)];
+    static readonly (string Name, PdfColor? Color)[] TextColors =
+        [("Keep the current color", null), ("Black", PdfColor.Black), ("Dark gray", new PdfColor(80, 80, 80)), ("Red", PdfColor.Red), ("Blue", PdfColor.Blue), ("Green", PdfColor.Green), ("White", PdfColor.White)];
 
-    /// <summary>Change the words, font, size or colour of a piece of text on the page, or delete it.</summary>
+    /// <summary>Change the words, font, size or color of a piece of text on the page, or delete it.</summary>
     public static TextEditChoice? EditText(Window? owner, PageObjectInfo info)
     {
         var f = new FormBuilder(owner, "Edit Text", 560);
@@ -272,7 +272,7 @@ public static class Forms
         var boldBox = f.Check("Bold", bold);
         var italicBox = f.Check("Italic", italic);
         var size = f.Text("Letter size (points)", Math.Round(info.Size, 1).ToString(System.Globalization.CultureInfo.InvariantCulture), 100);
-        var colour = f.Choice("Colour", TextColours.Select(c => c.Name));
+        var color = f.Choice("Color", TextColors.Select(c => c.Name));
         var delete = f.Check("Delete this text from the page");
         TextEditChoice? result = null;
         if (!f.Show("Apply", () =>
@@ -281,7 +281,7 @@ public static class Forms
             if (!double.TryParse(size.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) &&
                 !double.TryParse(size.Text, out s)) { Dialogs.Info(f.Window, "Edit Text", "Type a letter size, such as 12."); return false; }
             if (s < 4 || s > 300) { Dialogs.Info(f.Window, "Edit Text", "Type a letter size between 4 and 300."); return false; }
-            var chosen = TextColours[colour.SelectedIndex].Color ?? info.Color;
+            var chosen = TextColors[color.SelectedIndex].Color ?? info.Color;
             result = new TextEditChoice(delete.IsChecked == true, text.Text, FontSpecFor(fam.SelectedIndex, boldBox.IsChecked == true, italicBox.IsChecked == true), s, chosen);
             return true;
         })) return null;
@@ -362,7 +362,7 @@ public static class Forms
 
     public sealed record NewText(string Text, double Size, string Font, PdfColor Color);
 
-    /// <summary>Asks what text to put on the page: words (several lines allowed), font, size and colour.</summary>
+    /// <summary>Asks what text to put on the page: words (several lines allowed), font, size and color.</summary>
     public static NewText? TextToAdd(Window? owner)
     {
         var f = new FormBuilder(owner, "Add Text", 540);
@@ -372,7 +372,7 @@ public static class Forms
         var bold = f.Check("Bold");
         var italic = f.Check("Italic");
         var sizeBox = f.Text("Letter size (points)", "12", 100);
-        var colour = f.Choice("Colour", TextColours.Skip(1).Select(c => c.Name));
+        var color = f.Choice("Color", TextColors.Skip(1).Select(c => c.Name));
         NewText? result = null;
         if (!f.Show("Add", () =>
         {
@@ -380,7 +380,7 @@ public static class Forms
             if (!double.TryParse(sizeBox.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && !double.TryParse(sizeBox.Text, out s))
             { Dialogs.Info(f.Window, "Add Text", "Type a letter size, such as 12."); return false; }
             if (s < 4 || s > 200) { Dialogs.Info(f.Window, "Add Text", "Type a letter size between 4 and 200."); return false; }
-            result = new NewText(text.Text.Replace("\r\n", "\n"), s, FontSpecFor(fam.SelectedIndex, bold.IsChecked == true, italic.IsChecked == true), TextColours[colour.SelectedIndex + 1].Color!.Value);
+            result = new NewText(text.Text.Replace("\r\n", "\n"), s, FontSpecFor(fam.SelectedIndex, bold.IsChecked == true, italic.IsChecked == true), TextColors[color.SelectedIndex + 1].Color!.Value);
             return true;
         })) return null;
         return result;

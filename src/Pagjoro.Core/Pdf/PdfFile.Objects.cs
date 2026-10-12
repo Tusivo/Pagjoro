@@ -247,13 +247,13 @@ public sealed partial class PdfFile
         });
     }
 
-    /// <summary>Changes the colour of a mark.</summary>
+    /// <summary>Changes the color of a mark.</summary>
     public void SetAnnotationColor(int pageIndex, int annotationIndex, PdfColor color)
     {
         WithAnnotation(pageIndex, annotationIndex, annot =>
         {
             if (fpdf_annot.FPDFAnnotSetColor(annot, FPDFANNOT_COLORTYPE.FPDFANNOT_COLORTYPE_Color, color.R, color.G, color.B, 255) == 0)
-                throw new PdfException("That mark could not be recoloured.");
+                throw new PdfException("That mark could not be recolored.");
         });
     }
 

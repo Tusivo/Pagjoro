@@ -28,6 +28,7 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 | Open password-protected files | ✔ | |
 | Recent files | ✔ | |
 | Keyboard shortcuts (zoom, page, search, go to page) | ✔ | |
+| Glide-scrolling with the middle mouse button | ✔ | Move away from where you pressed; speed follows the distance |
 | Rotate the view without changing the file | ✔ | Rotating pages themselves is in Phase 2 |
 | Read aloud and high-contrast viewing | ○ | Windows speech APIs |
 | Measure distance, area, perimeter | ○ | |
@@ -52,12 +53,12 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 | Feature | State | Notes |
 |---|---|---|
 | Highlight, underline, strike through | ✔ | |
-| Notes | ✔ | Click a mark to choose it, edit its words or colour, move it, delete it |
+| Notes | ✔ | Click a mark to choose it, edit its words or color, move it, delete it |
 | Shapes (box, oval) and freehand drawing | ✔ | |
 | Stamps, with ready-made and custom words and the date | ✔ | |
 | Marks list | ✔ | |
 | Export the marks list (text or spreadsheet) | ✔ | Page, type, the words marked and the comment |
-| Highlight colours (seven) and line thickness | ✔ | |
+| Highlight colors (seven) and line thickness | ✔ | |
 | Compare two documents | ✔ | Word by word, page by page |
 | Collect and merge comments from several copies | ○ | |
 
@@ -77,7 +78,7 @@ What Pagjoro does and what it is meant to do, grouped by build phase. Feature na
 |---|---|---|
 | Edit text on the page | ◐ | A line is replaced and re-set at the same place in a font of your choice; the original font is not reused |
 | Replace, delete and move pictures and text | ✔ | |
-| Add text (font, size, colour, several lines) and pictures | ✔ | The twelve built-in fonts, and about twenty families installed in Windows, with Latin, Greek and Cyrillic letters |
+| Add text (font, size, color, several lines) and pictures | ✔ | The twelve built-in fonts, and about twenty families installed in Windows, with Latin, Greek and Cyrillic letters |
 | Headers, footers, page numbers | ✔ | |
 | Watermarks | ✔ | |
 | Bates numbering | ✔ | |

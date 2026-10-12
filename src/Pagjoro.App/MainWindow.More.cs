@@ -121,7 +121,7 @@ public partial class MainWindow
         var panel = new StackPanel();
         foreach (var r in results)
         {
-            var (glyph, colour) = r.Status switch
+            var (glyph, color) = r.Status switch
             {
                 CheckStatus.Passed => ("✔", Color.FromRgb(22, 130, 60)),
                 CheckStatus.Warning => ("⚠", Color.FromRgb(200, 120, 0)),
@@ -131,7 +131,7 @@ public partial class MainWindow
             var row = new Grid { Margin = new Thickness(0, 0, 0, 12) };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(34) });
             row.ColumnDefinitions.Add(new ColumnDefinition());
-            row.Children.Add(new System.Windows.Controls.TextBlock { Text = glyph, FontSize = 20, Foreground = new SolidColorBrush(colour), VerticalAlignment = VerticalAlignment.Top });
+            row.Children.Add(new System.Windows.Controls.TextBlock { Text = glyph, FontSize = 20, Foreground = new SolidColorBrush(color), VerticalAlignment = VerticalAlignment.Top });
             var text = new StackPanel();
             text.Children.Add(new System.Windows.Controls.TextBlock { Text = r.Title, FontWeight = FontWeights.SemiBold });
             text.Children.Add(new System.Windows.Controls.TextBlock { Text = r.Detail, TextWrapping = TextWrapping.Wrap, Opacity = 0.85 });

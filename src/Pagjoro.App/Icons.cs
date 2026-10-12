@@ -9,7 +9,7 @@ using Microsoft.Win32;
 namespace Pagjoro.App;
 
 /// <summary>
-/// The toolbar and tab icons: bare, bold, round-ended line drawings on a 24 by 24 grid, one colour per group of tools (the same
+/// The toolbar and tab icons: bare, bold, round-ended line drawings on a 24 by 24 grid, one color per group of tools (the same
 /// approach as the sidebar of Tusivo's Ledjoro). They are vector shapes, so they stay sharp at any screen scaling and need no image files.
 /// Use in XAML as <c>Content="{local:Icon Open}"</c>.
 /// </summary>
@@ -22,7 +22,7 @@ public sealed class IconExtension : MarkupExtension
     public string Key { get; set; } = "";
     public double Size { get; set; } = 18;
 
-    // group colours: deeper for light themes, lighter for dark themes
+    // group colors: deeper for light themes, lighter for dark themes
     enum Group { Graphite, Red, Orange, Green, Purple, Blue, Slate, Pink }
     static readonly Color[][] Palette =
     [
@@ -94,7 +94,7 @@ public sealed class IconExtension : MarkupExtension
         catch (Exception) { return false; }
     }
 
-    /// <summary>True when the window has a dark background: icons use their lighter colours. Setting it recolours every icon already on screen.</summary>
+    /// <summary>True when the window has a dark background: icons use their lighter colors. Setting it recolors every icon already on screen.</summary>
     public static bool Dark
     {
         get => dark;
@@ -137,7 +137,7 @@ public sealed class IconExtension : MarkupExtension
         var icon = new Live(shape.Group, line, solid);
         icon.Apply();
         live.Add(new WeakReference<Live>(icon));
-        // keep the recolouring object alive as long as the element is
+        // keep the recoloring object alive as long as the element is
         grid.Tag = icon;
         grid.Children.Add(host);
         return grid;

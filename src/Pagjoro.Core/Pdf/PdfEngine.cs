@@ -6,7 +6,7 @@ using PDFiumCore;
 namespace Pagjoro.Core.Pdf;
 
 /// <summary>
-/// The one place that starts the PDF engine (PDFium, BSD-3-Clause and Apache-2.0) and serialises access to it, because the engine is not thread safe.
+/// The one place that starts the PDF engine (PDFium, BSD-3-Clause and Apache-2.0) and serializes access to it, because the engine is not thread safe.
 /// Every call into the engine goes through <see cref="Gate"/>.
 /// </summary>
 public static class PdfEngine

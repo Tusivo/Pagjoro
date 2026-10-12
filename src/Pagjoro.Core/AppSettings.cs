@@ -6,7 +6,7 @@ namespace Pagjoro.Core;
 /// <summary>Where the window was last, so it opens in the same place and size.</summary>
 public sealed record WindowPlacement(double Left, double Top, double Width, double Height, bool Maximized);
 
-/// <summary>The person's own choices (the colour theme and where the window was), kept in the program's data folder. Nothing in it leaves the computer.</summary>
+/// <summary>The person's own choices (the color theme and where the window was), kept in the program's data folder. Nothing in it leaves the computer.</summary>
 public sealed class AppSettings
 {
     public static readonly IReadOnlyList<string> Themes = ["dark", "light", "night"];

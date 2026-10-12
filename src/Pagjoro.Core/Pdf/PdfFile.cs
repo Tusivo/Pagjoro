@@ -7,7 +7,7 @@ namespace Pagjoro.Core.Pdf;
 
 /// <summary>
 /// A PDF document held in memory. Opening a file reads it completely, so the original on disk is never locked and never changed until
-/// <see cref="SaveTo(string)"/> is called. All access to the engine is serialised through <see cref="PdfEngine.Gate"/>.
+/// <see cref="SaveTo(string)"/> is called. All access to the engine is serialized through <see cref="PdfEngine.Gate"/>.
 /// </summary>
 public sealed partial class PdfFile : IDisposable
 {

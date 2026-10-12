@@ -4,7 +4,7 @@ using PDFiumCore;
 
 namespace Pagjoro.Core.Pdf;
 
-/// <summary>An RGB colour with an opacity from 0 (clear) to 255 (solid).</summary>
+/// <summary>An RGB color with an opacity from 0 (clear) to 255 (solid).</summary>
 public readonly record struct PdfColor(byte R, byte G, byte B, byte A = 255)
 {
     public static readonly PdfColor Black = new(0, 0, 0);

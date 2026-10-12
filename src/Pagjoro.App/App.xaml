@@ -4,7 +4,7 @@
              ThemeMode="System"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!-- Pagjoro's own colours: a deep purple, never a copy of another product's palette -->
+        <!-- Pagjoro's own colors: a deep purple, never a copy of another product's palette -->
         <Color x:Key="AccentColor">#5B21B6</Color>
         <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
     </Application.Resources>

@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Pagjoro.Core.Pdf;
 
 namespace Pagjoro.App;
@@ -169,7 +170,7 @@ public sealed class DocumentView : FrameworkElement
             var (w, h) = doc.GetViewSize(i);
             if (Facing && i + 1 < count)
             {
-                // two pages side by side, tops aligned, the pair centred as one
+                // two pages side by side, tops aligned, the pair centered as one
                 var (w2, h2) = doc.GetViewSize(i + 1);
                 var pairWidth = w + pairGapPts + w2;
                 slots.Add(new Slot(top, w, h, pairWidth, 0));
@@ -350,6 +351,7 @@ public sealed class DocumentView : FrameworkElement
 
             DrawOverlays(dc, i, s, rect);
         }
+        DrawAutoScrollMarker(dc);
     }
 
     void DrawOverlays(DrawingContext dc, int page, Slot s, Rect rect)
@@ -602,6 +604,115 @@ public sealed class DocumentView : FrameworkElement
             if (link.Uri is not null || link.PageIndex >= 0) Cursor = Cursors.Hand;
         }
         catch (PdfException) { }
+    }
+
+    // ---- scrolling with the middle button ---------------------------------------------------------------------------
+    //
+    // Press the middle button (the wheel) and move the mouse away from where it was pressed: the page glides that way, faster the further
+    // the mouse is from the starting point. Hold the button and let go to stop, or click it once to keep gliding and click again to stop.
+
+    DispatcherTimer? glideTimer;
+    bool gliding, glideHeld;
+    Point glideStartScreen;      // where the button went down, in screen pixels
+    Point glideMarkerContent;    // the same place, in the view's own coordinates (follows the scrolling)
+    Point glideStartInScroller;
+    DateTime glideStartedAt;
+    bool glideMoved;
+
+    public bool IsGliding => gliding;
+
+    void StartGlide()
+    {
+        if (scroller is null || doc is null || gliding) return;
+        gliding = true; glideHeld = true; glideMoved = false; glideStartedAt = DateTime.UtcNow;
+        glideStartScreen = PointToScreen(Mouse.GetPosition(this));
+        glideStartInScroller = scroller.PointFromScreen(glideStartScreen);
+        Cursor = Cursors.ScrollAll;
+        CaptureMouse();
+        glideTimer ??= new DispatcherTimer(DispatcherPriority.Input) { Interval = TimeSpan.FromMilliseconds(16) };
+        glideTimer.Tick -= GlideTick; glideTimer.Tick += GlideTick;
+        glideTimer.Start();
+        InvalidateVisual();
+    }
+
+    /// <summary>Ends the gliding, if it is going.</summary>
+    public void StopGlide()
+    {
+        if (!gliding) return;
+        gliding = false; glideHeld = false;
+        glideTimer?.Stop();
+        if (IsMouseCaptured) ReleaseMouseCapture();
+        Cursor = null;
+        InvalidateVisual();
+    }
+
+    void GlideTick(object? sender, EventArgs e)
+    {
+        if (!gliding || scroller is null) return;
+        var now = PointToScreen(Mouse.GetPosition(this));
+        var scale = dpiScale <= 0 ? 1 : dpiScale;
+        double dx = (now.X - glideStartScreen.X) / scale, dy = (now.Y - glideStartScreen.Y) / scale;
+        // a small still zone around the starting point, then speed grows with distance
+        const double dead = 8, gain = 0.13;
+        double Speed(double d) => Math.Abs(d) <= dead ? 0 : Math.Sign(d) * (Math.Abs(d) - dead) * gain * (1 + Math.Abs(d) / 400);
+        double vx = Speed(dx), vy = Speed(dy);
+        if (Math.Abs(dx) > dead || Math.Abs(dy) > dead) glideMoved = true;
+        if (vy != 0) scroller.ScrollToVerticalOffset(scroller.VerticalOffset + vy);
+        if (vx != 0) scroller.ScrollToHorizontalOffset(scroller.HorizontalOffset + vx);
+        glideMarkerContent = new Point(scroller.HorizontalOffset + glideStartInScroller.X, scroller.VerticalOffset + glideStartInScroller.Y);
+        InvalidateVisual();
+    }
+
+    void DrawAutoScrollMarker(DrawingContext dc)
+    {
+        if (!gliding || scroller is null) return;
+        var c = new Point(scroller.HorizontalOffset + glideStartInScroller.X, scroller.VerticalOffset + glideStartInScroller.Y);
+        var fill = new SolidColorBrush(Color.FromArgb(215, 30, 30, 30));
+        var ink = new Pen(Brushes.White, 1.6) { LineJoin = PenLineJoin.Round, StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+        dc.DrawEllipse(fill, new Pen(Brushes.White, 1.5), c, 15, 15);
+        dc.DrawEllipse(Brushes.White, null, c, 2.2, 2.2);
+        // four little arrows, one for each direction
+        foreach (var (ux, uy) in new[] { (0, -1), (0, 1), (-1, 0), (1, 0) })
+        {
+            var tip = new Point(c.X + ux * 10.5, c.Y + uy * 10.5);
+            var back = new Point(c.X + ux * 6.5, c.Y + uy * 6.5);
+            var side = new Vector(-uy, ux) * 2.8;
+            var geo = new StreamGeometry();
+            using (var ctx = geo.Open()) { ctx.BeginFigure(back + side, false, false); ctx.LineTo(tip, true, true); ctx.LineTo(back - side, true, true); }
+            geo.Freeze();
+            dc.DrawGeometry(null, ink, geo);
+        }
+    }
+
+    protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+    {
+        if (gliding)
+        {
+            // any button stops the gliding; the click is not passed on to a tool
+            StopGlide();
+            e.Handled = true;
+            return;
+        }
+        if (e.ChangedButton == MouseButton.Middle && doc is not null)
+        {
+            StartGlide();
+            e.Handled = true;
+            return;
+        }
+        base.OnPreviewMouseDown(e);
+    }
+
+    protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
+    {
+        if (gliding && e.ChangedButton == MouseButton.Middle && glideHeld)
+        {
+            // held and moved: let go to stop. A quick click without moving keeps the gliding going until the next click.
+            var quick = (DateTime.UtcNow - glideStartedAt).TotalMilliseconds < 350 && !glideMoved;
+            if (quick) glideHeld = false; else StopGlide();
+            e.Handled = true;
+            return;
+        }
+        base.OnPreviewMouseUp(e);
     }
 
     protected override void OnMouseWheel(MouseWheelEventArgs e)

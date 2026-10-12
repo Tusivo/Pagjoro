@@ -91,7 +91,7 @@ public static class PageDecorations
         foreach (var p in pages)
         {
             var (w, h) = file.SeenSize(p);
-            // the text is centred on the page: move back by half its length along its own direction
+            // the text is centered on the page: move back by half its length along its own direction
             var cx = w / 2 - Math.Cos(angle) * tw / 2 + Math.Sin(angle) * th / 4;
             var cy = h / 2 - Math.Sin(angle) * tw / 2 - Math.Cos(angle) * th / 4;
             file.AddTextSeen(p, o.Text, cx, cy, o.FontSize, color, o.Font, o.AngleDegrees);
